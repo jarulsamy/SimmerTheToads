@@ -1,7 +1,7 @@
 #+title: Simmer The Toads
 
 Simmer The Toads aims to refine playlists of varying artists and genres to
-gradually transition from one musical style to another.
+gradually transition from various music styles to create a cohesive listening experience.
 
 * Elevator Pitch
 
