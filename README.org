@@ -52,6 +52,6 @@ goals are achievable.
   seamlessly shift between artists and (more importantly) musical styles. We
   also plan to add collaborative playlist creation features.
   
-  *** What's up with "Simmer the Toads?"
+*** What's up with "Simmer the Toads?"
   + When you boil frogs, you don't put them in a hot pot initially - they'll just jump straight out. You slowly but surely turn up the heat! "Boil the Frogs" refers to slowly but surely changing the genre - so before you know it, you'll go from Taylor Swift to Five Finger Death punch.
   Simmer the Toads is our homage to Boil the Frogs, hence the synonymical name
