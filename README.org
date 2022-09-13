@@ -6,11 +6,11 @@ gradually transition from one musical style to another.
 * Elevator Pitch
 
 ** Why do we want to do this?
-Consider this situation, you are stuck on a long road trip, listening to music,
+Consider this situation: you are stuck on a long road trip
 with many people you don't know. Naturally, you all have differing music tastes,
 and so there is little cohesion between all the different songs. Simmer The
-Toads aims to solve this problem. We want to create a collaborative Spotify
-playlist platform, which seamlessly transitions between music of one style to
+Toads aims to solve this problem (and many others!) by creating a collaborative Spotify
+playlist platform, which not only allows yourself and friends to create playlists but to seamlessly transition between music of one style to
 another.
 
 ** Why is it cool?
