@@ -1,0 +1,53 @@
+#+title: Simmer The Toads
+
+Simmer The Toads aims to refine playlists of varying artists and genres to
+gradually transition from one musical style to another.
+
+* Elevator Pitch
+
+** Why do we want to do this?
+Consider this situation, you are stuck on a long road trip, listening to music,
+with many people you don't know. Naturally, you all have differing music tastes,
+and so there is little cohesion between all the different songs. Simmer The
+Toads aims to solve this problem. We want to create a collaborative Spotify
+playlist platform, which seamlessly transitions between music of one style to
+another.
+
+** Why is it cool?
+To many of us, music has become more than a daily part of our lives. We listen
+to and explore new artists all the time. A collaborative playlist service where
+we can come together to listen to the music that we already enjoy, but also
+gently expand our tastes does not exist. Such a platform would aid in artist and
+genre discovery and even help get you more acquainted with the music tastes of
+your friends.
+
+** Why is it achievable?
+Spotify has an exceedingly open and diverse set of resources for developers. We
+can take advantage of much of the existing music recommendation tool-set and
+build a cohesive platform with tight integration with Spotify. There is a
+project called "Boil The Frog" which already does something similar, but is
+rather limited, as it recommends a path of songs from one artist to another. We
+look to "Boil The Frog" as more of a proof of concept, which demonstrates our
+goals are achievable.
+
+** Possible Questions
+
+*** How do you plan on implementing / doing this?
++ We plan on building a website (or some other equivalent platform) which allows
+  invited members to add songs to a collaborative playlist. Then, utilizing the
+  existing Spotify recommendations APIs, analyze each song within the playlist
+  and identify distinct genres and styles. Essentially, group the songs into
+  stylistic categories. We can search for songs matching these categories, and
+  fill in large stylistic gaps with "transition" songs.
+
+*** What kind of (relevant) Spotify APIs exist?
++ Playlist Interactions (Add, remove, update, etc.)
++ Track audio features, analysis, and recommendations.
++ Genre seeds for recommendation analytics.
+
+*** How is this different from the existing project "Boil The Frog"?
++ Boil The Frog takes two artists and creates a playlist gradually transitioning
+  from one to the other. While fundamentally similar, Simmer The Toads aims to
+  reorder an existing playlist, while adding transition songs when necessary, to
+  seamlessly shift between artists and (more importantly) musical styles. We
+  also plan to add collaborative playlist creation features.
