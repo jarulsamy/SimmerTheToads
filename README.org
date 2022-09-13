@@ -8,7 +8,7 @@ gradually transition from various music styles to create a cohesive listening ex
 ** Why do we want to do this?
 Consider this situation: you are stuck on a long road trip
 with many people you don't know. Naturally, you all have differing music tastes,
-and so there is little cohesion between all the different songs. Simmer The
+and so there is little cohesion between all the different songs you may add. Simmer The
 Toads aims to solve this problem (and many others!) by creating a collaborative Spotify
 playlist platform, which not only allows yourself and friends to create playlists but to seamlessly transition between music of one style to
 another.
@@ -51,3 +51,7 @@ goals are achievable.
   reorder an existing playlist, while adding transition songs when necessary, to
   seamlessly shift between artists and (more importantly) musical styles. We
   also plan to add collaborative playlist creation features.
+  
+  *** What's up with "Simmer the Toads?"
+  + When you boil frogs, you don't put them in a hot pot initially - they'll just jump straight out. You slowly but surely turn up the heat! "Boil the Frogs" refers to slowly but surely changing the genre - so before you know it, you'll go from Taylor Swift to Five Finger Death punch.
+  Simmer the Toads is our homage to Boil the Frogs, hence the synonymical name
