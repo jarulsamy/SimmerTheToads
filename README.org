@@ -6,12 +6,12 @@ gradually transition from various music styles to create a cohesive listening ex
 * Elevator Pitch
 
 ** Why do we want to do this?
-Consider this situation: you are stuck on a long road trip
-with many people you don't know. Naturally, you all have differing music tastes,
-and so there is little cohesion between all the different songs you may add. Simmer The
-Toads aims to solve this problem (and many others!) by creating a collaborative Spotify
-playlist platform, which not only allows yourself and friends to create playlists but to seamlessly transition between music of one style to
-another.
+Consider this situation: you are stuck on a long road trip with many people you
+don't know. Naturally, you all have differing music tastes, and so there is
+little cohesion between all the different songs you may add. Simmer The Toads
+aims to solve this problem (and many others!) by creating a collaborative
+Spotify playlist platform, which not only allows yourself and friends to create
+playlists but to seamlessly transition between music of one style to another.
 
 ** Why is it cool?
 To many of us, music has become more than a daily part of our lives. We listen
@@ -26,9 +26,9 @@ Spotify has an exceedingly open and diverse set of resources for developers. We
 can take advantage of much of the existing music recommendation tool-set and
 build a cohesive platform with tight integration with Spotify. There is a
 project called "Boil The Frog" which already does something similar, but is
-rather limited, as it recommends a singular path of songs from one artist to another. We
-look to "Boil The Frog" as more of a proof of concept, which demonstrates our
-goals are achievable.
+rather limited, as it recommends a singular path of songs from one artist to
+another. We look to "Boil The Frog" as more of a proof of concept, which
+demonstrates our goals are achievable.
 
 ** Possible Questions
 
@@ -53,5 +53,8 @@ goals are achievable.
   also plan to add collaborative playlist creation features.
   
 *** What's up with "Simmer the Toads?"
-  + When you boil frogs, you don't put them in a hot pot initially - they'll just jump straight out. You slowly but surely turn up the heat! "Boil the Frogs" refers to slowly but surely changing the genre - so before you know it, you'll go from Taylor Swift to Five Finger Death punch.
-  Simmer the Toads is our homage to Boil the Frogs, hence the synonymical name
+  + When you boil frogs, you don't put them in a hot pot initially - they'll
+    just jump straight out. You slowly but surely turn up the heat! "Boil the
+    Frogs" refers to slowly but surely changing the genre - so before you know
+    it, you'll go from Taylor Swift to Five Finger Death punch. Simmer the Toads
+    is our homage to Boil the Frogs, hence the synonymical name
