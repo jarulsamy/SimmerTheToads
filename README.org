@@ -26,7 +26,7 @@ Spotify has an exceedingly open and diverse set of resources for developers. We
 can take advantage of much of the existing music recommendation tool-set and
 build a cohesive platform with tight integration with Spotify. There is a
 project called "Boil The Frog" which already does something similar, but is
-rather limited, as it recommends a path of songs from one artist to another. We
+rather limited, as it recommends a singular path of songs from one artist to another. We
 look to "Boil The Frog" as more of a proof of concept, which demonstrates our
 goals are achievable.
 
