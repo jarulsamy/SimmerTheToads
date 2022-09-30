@@ -12,29 +12,23 @@
 
 - Simmer the Toads is a Spotify extention that takes in a list of songs
     suggested by a group of people, then makes it into one seamless playlist. It
-    connects each of your diverse music tastes, gradually taking you from one
-    music style to another, by elegantly arranging your list of songs and
-    creating musical pathways of additional "transition" songs between genres.
+    connects each of your diverse music tastes, by elegantly arranging your list of songs based on similar genres, and
+    creating musical pathways of additional "transition" songs between each unique genre.
 
 - We're extending the use of existing programs such as Boil the Frog (a song
     path generator) and Spotify Enhance (a built in playlist enhancement
     feature) to create a curated listening experience.
 
 **What do you need to be successful?**
-- Spotify has an exceedingly open and diverse set of resources (APIs) for
-    developers. We can take advantage of much of the existing music
-    recommendation tool-set and build a cohesive platform with tight integration
-    with Spotify.
 
-- For front-end development, we plan on using React, a well-documented
-    Javascript library for building user interfaces.
-
-- We plan on building a website (or some other equivalent platform) which allows
-    invited members to add songs to a collaborative playlist. Then, utilizing
-    the existing Spotify recommendations APIs, analyze each song within the
-    playlist and identify distinct genres and styles. Then, we group the songs
-    into stylistic categories. Each stylistic category is connected to the next
+- We plan on building a website (or some other equivalent platform) utilizing the React library which allows
+    invited members to add songs to a collaborative playlist through code sharing (like Kahoot). We plan on using
+    the existing Spotify recommendations APIs integrated with the python library Spotipy to build a cohesive platform with tight integration.
+    
+- Our code will analyze each song within the playlist and identify distinct genres and styles. Then, we'll group the songs
+    into stylistic categories, and connect each category to the next
     through a musical pathway of “transition” songs.
+    
 
 **Why are you the right team to solve this problem?**
 
@@ -49,8 +43,3 @@
     anywhere we may need additional help within the team. Our team has the
     diverse skill set and varied interests to make solving this problem
     possible.
-    
-- Natalie: I've taken a few ML classes so I'd love to work on that prtion of 
-    the project. I also have experience with front end development and some 
-    experience with react. Our team chose a project that we are all really 
-    interested in and that plays to our strengths.
