@@ -49,3 +49,8 @@
     anywhere we may need additional help within the team. Our team has the
     diverse skill set and varied interests to make solving this problem
     possible.
+    
+- Natalie: I've taken a few ML classes so I'd love to work on that prtion of 
+    the project. I also have experience with front end development and some 
+    experience with react. Our team chose a project that we are all really 
+    interested in and that plays to our strengths.
