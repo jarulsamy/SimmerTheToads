@@ -54,3 +54,5 @@
     the project. I also have experience with front end development and some 
     experience with react. Our team chose a project that we are all really 
     interested in and that plays to our strengths.
+
+- Joseph: I also have some experience with ML and HTML and can help Natalie with the ML component and with the Web Interface as needed. I really enjoy making different modules work elegantly together I would like to work on the Backend Interface.
