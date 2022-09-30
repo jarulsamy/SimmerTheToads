@@ -12,6 +12,8 @@
 
 - For front-end development, we plan on using React, a well-documented Javascript library for building user interfaces.
 
-- We plan on building a website (or some other equivalent platform) which allows invited members to add songs to a collaborative playlist. Then, utilizing the existing Spotify recommendations APIs, analyze each song within the playlist and identify distinct genres and styles. Essentially, group the songs into stylistic categories. We can search for songs matching these categories, and fill in large stylistic gaps with “transition” songs.
+- We plan on building a website (or some other equivalent platform) which allows invited members to add songs to a collaborative playlist. Then, utilizing the existing Spotify recommendations APIs, analyze each song within the playlist and identify distinct genres and styles. Then, we group the songs into stylistic categories. Each stylistic category is connected to the next through a musical pathway of “transition” songs.
 
 **Why are you the right team to solve this problem?**
+
+- Lona: I love making playlists to curate moods and memories - so Simmer the Toads was my brainchild to help streamline this experience for groups of people with diverse music tastes. I also have done research into the Spotify API and understand a lot about what integrations may be crucial to making this project a success.
