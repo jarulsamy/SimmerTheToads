@@ -3,7 +3,8 @@
 Simmer The Toads aims to refine playlists of varying artists and genres to
 gradually transition from various music styles to create a cohesive listening experience.
 
-Link to Asana project: https://app.asana.com/0/1203117920538793/1203117920538793
+Link to Asana project: https://app.asana.com/0/1203117920538793/1203117920538793   
+Final Planning Documentation: https://docs.google.com/document/d/15pjyt_XI3FkuYh_ikdXoLbBNePZceG3tsy4lTy3-jgw/edit?usp=sharing   
 
 * Elevator Pitch
 
