@@ -11,6 +11,25 @@ The existing files/directories serve the following functions:
 - `templates/`: Contains Jinja2 templates for HTML generation.
 - `tests/`: Contains unit and integration testing assets.
 
+## Developer Environment Setup
+
+1.  Install [Python 3.8](https://www.python.org/downloads/) or later.
+
+2.  Navigate to the root of this repository then create and activate a virtual
+    environment.
+
+        $ python3 -m venv env
+        $ source env/bin/activate # mac/linux
+        $ env/bin/activate.bat    # windows
+
+3.  Install the project dependencies.
+
+        $ pip install .
+
+4.  Start the development web server.
+
+        $ flask --debug --app SimmerTheToads run
+
 ## Useful Links
 
 - ![Flask Applications as Packages](https://flask.palletsprojects.com/en/2.2.x/patterns/packages/)

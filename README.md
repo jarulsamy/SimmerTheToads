@@ -11,7 +11,6 @@ experience.
 ## Table of Contents
 
 - [Simmer The Toads](#simmer-the-toads)
-  - [Table of Contents](#table-of-contents)
 - [Elevator Pitch](#elevator-pitch)
   - [Why do we want to do this?](#why-do-we-want-to-do-this)
   - [Why is it cool?](#why-is-it-cool)
@@ -21,7 +20,6 @@ experience.
     - [What kind of (relevant) Spotify APIs exist?](#what-kind-of-relevant-spotify-apis-exist)
     - [How is this different from the existing project "Boil The Frog"?](#how-is-this-different-from-the-existing-project-boil-the-frog)
     - [What's up with "Simmer the Toads?"](#whats-up-with-simmer-the-toads)
-- [Developer Environment Setup](#developer-environment-setup)
 
 # Elevator Pitch
 
@@ -85,22 +83,3 @@ demonstrates our goals are achievable.
   Frogs" refers to slowly but surely changing the genre - so before you know
   it, you'll go from Taylor Swift to Five Finger Death punch. Simmer the Toads
   is our homage to Boil the Frogs, hence the synonymical name
-
-# Developer Environment Setup
-
-1.  Install [Python 3.8](https://www.python.org/downloads/) or later.
-
-2.  Navigate to the root of this repository then create and activate a virtual
-    environment.
-
-        $ python3 -m venv env
-        $ source env/bin/activate # mac/linux
-        $ env/bin/activate.bat    # windows
-
-3.  Install the project dependencies.
-
-        $ pip install .
-
-4.  Start the development web server.
-
-        $ flask --debug --app SimmerTheToads run
