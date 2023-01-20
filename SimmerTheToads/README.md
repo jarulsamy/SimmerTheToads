@@ -34,6 +34,6 @@ The existing files/directories serve the following functions:
 
 ## Useful Links
 
-- ![Flask Applications as Packages](https://flask.palletsprojects.com/en/2.2.x/patterns/packages/)
-- ![Flask Organization Patterns](https://exploreflask.com/en/latest/organizing.html)
-- ![Flask General Documentation](https://flask.palletsprojects.com/en/2.2.x/)
+- [Flask Applications as Packages](https://flask.palletsprojects.com/en/2.2.x/patterns/packages/)
+- [Flask Organization Patterns](https://exploreflask.com/en/latest/organizing.html)
+- [Flask General Documentation](https://flask.palletsprojects.com/en/2.2.x/)
