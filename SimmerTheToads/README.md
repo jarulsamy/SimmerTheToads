@@ -30,6 +30,8 @@ The existing files/directories serve the following functions:
 
         $ flask --debug --app SimmerTheToads run
 
+5.  Navigate to `http://localhost:5000` to access the webapp.
+
 ## Useful Links
 
 - ![Flask Applications as Packages](https://flask.palletsprojects.com/en/2.2.x/patterns/packages/)
