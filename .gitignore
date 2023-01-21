@@ -324,6 +324,7 @@ dist
 # Django stuff:
 
 # Flask stuff:
+.flask_session
 
 # Scrapy stuff:
 
