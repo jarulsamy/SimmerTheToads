@@ -9,7 +9,12 @@ and genres to gradually transition from various music styles to create a cohesiv
 listening experience."""
 # readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["flask ~= 2.2.2"]
+dependencies = [
+    "flask          ~= 2.2.2",
+    "flask-session2 ~= 1.3.1",
+    "python-dotenv  ~= 0.21.1",
+    "spotipy        ~= 2.22.0",
+]
 dynamic = ["version"]
 
 [tool.setuptools]
