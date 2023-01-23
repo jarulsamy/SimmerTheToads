@@ -7,12 +7,17 @@ name = "SimmerTheToads"
 description = """Simmer The Toads aims to refine playlists of varying artists
 and genres to gradually transition from various music styles to create a cohesive
 listening experience."""
-# readme = "README.md"
+readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "flask          ~= 2.2.2",
     "flask-session2 ~= 1.3.1",
+    "matplotlib     ~= 3.6.3",
+    "numpy          ~= 1.24.1",
+    "pandas         ~= 1.5.3",
     "python-dotenv  ~= 0.21.1",
+    "scipy          ~= 1.10.0",
+    "seaborn        ~= 0.12.2",
     "spotipy        ~= 2.22.0",
 ]
 dynamic = ["version"]
@@ -22,3 +27,6 @@ packages = ["SimmerTheToads"]
 
 [tool.setuptools.dynamic]
 version = { attr = "SimmerTheToads.__version__" }
+
+[tool.pydocstyle]
+add_ignore = ["D107"]
