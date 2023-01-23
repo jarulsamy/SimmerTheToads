@@ -106,7 +106,12 @@ class Playlist:
         """Show some simple statistics about this playlist."""
         nrows = 4
         ncols = 3
-        fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(16, 12))
+        lineplots_fig, lineplots_axes = plt.subplots(
+            nrows=nrows, ncols=ncols, figsize=(16, 12)
+        )
+        distplots_fig, distplots_axes = plt.subplots(
+            nrows=nrows, ncols=ncols, figsize=(16, 12)
+        )
         relevant_cols = [
             "acousticness",
             "danceability",
@@ -123,24 +128,22 @@ class Playlist:
         ]
 
         for i, v in enumerate(relevant_cols):
-            ax = axes[i % (ncols + 1)][i // nrows]
-            # sns.histplot(data=self.df, x=x, ax=ax)
-            #
-            # sns.boxplot(
-            #     data=self.df,
-            #     y=v,
-            #     ax=ax,
-            #     palette="husl",
-            # )
+            ax = lineplots_axes[i % (ncols + 1)][i // nrows]
+            sns.lineplot(data=self.df, x=self.df.index, y=v, ax=ax)
+
+        for i, v in enumerate(relevant_cols):
+            ax = distplots_axes[i % (ncols + 1)][i // nrows]
             sns.histplot(
                 data=self.df,
                 x=v,
                 ax=ax,
             )
-            # self.df.hist(column=x, ax=ax)
 
-        fig.suptitle(f"Playlist General Statistics: {self.name}")
-        fig.tight_layout()
+        lineplots_fig.suptitle(f"{self.name}")
+        lineplots_fig.tight_layout()
+
+        distplots_fig.suptitle(f"{self.name}")
+        distplots_fig.tight_layout()
         plt.show()
 
 
@@ -160,17 +163,11 @@ def simmer_playlist(
     :param spotify: Current spotify OAuth session
     :param playlist_id: ID of the playlist to simmer.
     """
-    # playlists = spotify.current_user_playlists()
-    # playlists = sort_playlists_by_id(playlists)
-    # playlist = playlists[playlist_id]
-    # pprint(playlist)
-
     # TODO: This will need to handle the pagination eventually
     #       Currently, this will only handle the first 100 songs.
     #       Also, beware the rate limit...
     p = Playlist(spotify, playlist_id, playlist_name)
     p.plot()
-    # p.df.plot()
 
 
 if __name__ == "__main__":
