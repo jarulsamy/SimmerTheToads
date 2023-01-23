@@ -26,13 +26,13 @@
     <h1>Hello, World!</h1>
     <p>Simmer thy toads!</p>
 
-    <div id="hello_button_container"></div>
+    <div id="songs"></div>
 
     <!-- Load React. -->
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="{{ url_for('static', filename='react_hello_world.js') }}" async> </script>
+    <script type="module" src="{{ url_for('static', filename='song_form.js') }}" async> </script>
 </body>
 
 </html>
