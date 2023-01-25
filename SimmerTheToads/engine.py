@@ -59,6 +59,7 @@ class Track:
 class Playlist:
     """Represent a Spotify playlist."""
 
+    metadata: dict
     id: str
     name: Optional[str]
     df: pd.DataFrame
@@ -83,9 +84,9 @@ class Playlist:
         "track",
     ]
 
-    def __init__(self, spotify, id, name=None):
+    def __init__(self, spotify, id):
         self.id = id
-        self.name = name
+        self.metadata = spotify.playlist(id)
 
         # Retrieve all the tracks within the playlist
         track_data = spotify.user_playlist_tracks(playlist_id=self.id)
@@ -128,21 +129,23 @@ class Playlist:
         ]
 
         for i, v in enumerate(relevant_cols):
-            ax = lineplots_axes[i % (ncols + 1)][i // nrows]
-            sns.lineplot(data=self.df, x=self.df.index, y=v, ax=ax)
-
-        for i, v in enumerate(relevant_cols):
-            ax = distplots_axes[i % (ncols + 1)][i // nrows]
+            sns.lineplot(
+                data=self.df,
+                x=self.df.index,
+                y=v,
+                ax=lineplots_axes[i % (ncols + 1)][i // nrows],
+                markers=True,
+            )
             sns.histplot(
                 data=self.df,
                 x=v,
-                ax=ax,
+                ax=distplots_axes[i % (ncols + 1)][i // nrows],
             )
 
-        lineplots_fig.suptitle(f"{self.name}")
+        lineplots_fig.suptitle(f"{self.metadata['name']}")
         lineplots_fig.tight_layout()
 
-        distplots_fig.suptitle(f"{self.name}")
+        distplots_fig.suptitle(f"{self.metadata['name']}")
         distplots_fig.tight_layout()
         plt.show()
 
@@ -150,7 +153,6 @@ class Playlist:
 def simmer_playlist(
     spotify: Spotify,
     playlist_id: str,
-    playlist_name: Optional[str] = None,
 ) -> list[Track]:
     """
     Reorder / add songs to playlist for simmering.
@@ -166,7 +168,7 @@ def simmer_playlist(
     # TODO: This will need to handle the pagination eventually
     #       Currently, this will only handle the first 100 songs.
     #       Also, beware the rate limit...
-    p = Playlist(spotify, playlist_id, playlist_name)
+    p = Playlist(spotify, playlist_id)
     p.plot()
 
 
@@ -198,6 +200,15 @@ if __name__ == "__main__":
 
     spotify = spotipy.Spotify(auth_manager=auth_manager)
 
-    playlist_name = "Josh's Jar of Samys"
-    playlist_id = "3Wh0AUvdYEg6fz0zmpwaH6"
-    simmer_playlist(spotify, playlist_id, playlist_name)
+    playlists = {
+        "Abbey Road": "2CPPiUTAtfvaeAEyWApOSE",
+        "Fiddler on the roof": "3engsNaAr6Q9cTT85gKCGd",
+        "Josh's Jar of Samys": "3Wh0AUvdYEg6fz0zmpwaH6",
+        "Lona and Josh's Code Think Tank": "0GJIoDOUsoSS2IDWniCTqP",
+        "The Big Bach": "4OFbt8ZZOhE0oZcC4GGBMO",
+        "godawful amalgamation": "0KOMGaR3mgeymmUBoN0ZlQ",
+        "close but no cigar": "78C62xSuql1V2jwMvonI4N",
+        "manic pixel dream girl complex": "3ZL5feDBYxJSWR6zg7EDeu",
+    }
+
+    simmer_playlist(spotify, playlists["manic pixel dream girl complex"])
