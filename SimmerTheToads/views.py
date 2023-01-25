@@ -16,7 +16,7 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 # This needs to be set in your spotify dashboard!
-REDIRECT_URI = "http://localhost:5000/login_callback"
+REDIRECT_URI = "http://127.0.0.1:5000/login_callback"
 OAUTH_SCOPES = [
     "playlist-read-private",
     "playlist-read-collaborative",
