@@ -1,6 +1,7 @@
 """Primary playlist manipulation module."""
 import os
 from pathlib import Path
+from pprint import pprint
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -112,7 +113,7 @@ class Playlist:
         # Get all the features of each track within the playlist.
         # Do this outside of the Track class to leverage the batched API.
         features = []
-        for chunk in grouper(track_ids, 100):
+        for chunk in grouper(track_ids, min(len(track_ids), 100)):
             features.extend(spotify.audio_features(list(chunk)))
 
         rows = []
@@ -249,4 +250,4 @@ if __name__ == "__main__":
         "close but no cigar": "78C62xSuql1V2jwMvonI4N",
         "manic pixie dream girl complex": "3ZL5feDBYxJSWR6zg7EDeu",
     }
-    simmer_playlist(spotify, playlists["The Big Bach"])
+    simmer_playlist(spotify, playlists["close but no cigar"])
