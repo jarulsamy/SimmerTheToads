@@ -1,13 +1,12 @@
 """Primary playlist manipulation module."""
-import json
 import os
 from pathlib import Path
-from pprint import pprint
 from typing import Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from joblib import Parallel, delayed
 from spotipy.client import Spotify
 
 # pd.set_option("display.max_rows", None)
@@ -48,6 +47,8 @@ class Track:
         self._spotify = spotify
         self._analysis = {}
 
+        self._get_analysis()
+
     def _get_analysis(self):
         track_remove_keys = (
             "codestring",
@@ -59,7 +60,7 @@ class Track:
             "rythm_version",
         )
 
-        # TODO: This is really slow since there are so many API calls.
+        # TODO: This is somewhat slow since there are so many API calls.
         #       Maybe do this lazily/async?
         analysis = spotify.audio_analysis(self.id)
 
@@ -73,12 +74,8 @@ class Track:
 
     def plot(self):
         """Show plots based on Spotify's own analysis."""
-        if not self._analysis:
-            # No analysis data, talk to the API
-            self._get_analysis()
-
         for i in self.analysis_df_names:
-            self._analysis[i].plot(x="start")
+            self.analysis[i].plot(x="start")
 
         plt.show()
 
@@ -183,10 +180,11 @@ class Playlist:
         for chunk in grouper(track_ids, min(len(track_ids), 100)):
             features.extend(spotify.audio_features(list(chunk)))
 
-        rows = []
-        for metadata, features in zip(track_items, features):
-            t = Track(spotify, metadata["track"], features)
-            rows.append(t.features)
+        results = Parallel(n_jobs=os.cpu_count(), prefer="threads")(
+            delayed(Track)(spotify, m["track"], f)
+            for m, f in zip(track_items, features)
+        )
+        rows = [i.features for i in results]
 
         self.df = pd.DataFrame(rows, columns=self.FEATURE_COLUMNS)
 
@@ -269,12 +267,14 @@ def simmer_playlist(
     """
     p = Playlist(spotify, playlist_id)
 
-    # p.to_disk(Path("playlist.json"))
-    # p.plot(fmt_title="{name}: Original")
-    # reorder_feature = "liveness"
-    # p.reorder_by_feature(reorder_feature)
-    # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
-    # plt.show()
+    p.plot(fmt_title="{name}: Original")
+
+    reorder_feature = "liveness"
+    p.reorder_by_feature(reorder_feature)
+
+    p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
     CLIENT_ID = os.getenv("CLIENT_ID")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-    REDIRECT_URI = "http://localhost:5000/login_callback"
+    REDIRECT_URI = "http://127.0.0.1:5000/login_callback"
     OAUTH_SCOPES = [
         "playlist-read-private",
         "playlist-read-collaborative",
@@ -315,4 +315,4 @@ if __name__ == "__main__":
         "close but no cigar": "78C62xSuql1V2jwMvonI4N",
         "manic pixie dream girl complex": "3ZL5feDBYxJSWR6zg7EDeu",
     }
-    simmer_playlist(spotify, playlists["close but no cigar"])
+    simmer_playlist(spotify, playlists["The Big Bach"])
