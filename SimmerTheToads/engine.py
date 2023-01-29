@@ -1,4 +1,5 @@
 """Primary playlist manipulation module."""
+import json
 import os
 from pathlib import Path
 from pprint import pprint
@@ -32,19 +33,54 @@ class Track:
     _analysis: dict
     _spotify: Spotify
 
+    analysis_df_names = (
+        "bars",
+        "beats",
+        "sections",
+        "segments",
+        "tatums",
+    )
+
     def __init__(self, spotify: Spotify, metadata: dict, features: dict):
         self._metadata = metadata
         self._features = features
         self._features["track"] = self
         self._spotify = spotify
-
-        self._get_analysis()
+        self._analysis = {}
 
     def _get_analysis(self):
-        self._analysis = {}
+        track_remove_keys = (
+            "codestring",
+            "code_version",
+            "echoprintstring",
+            "synchstring",
+            "synch_version",
+            "rythmstring",
+            "rythm_version",
+        )
+
         # TODO: This is really slow since there are so many API calls.
-        #       Maybe do this lazily?
-        # self._analysis = spotify.audio_analysis(self.id)
+        #       Maybe do this lazily/async?
+        analysis = spotify.audio_analysis(self.id)
+
+        # Remove unused track attributes
+        for i in track_remove_keys:
+            analysis["track"].pop(i, None)
+        self._analysis["track"] = analysis["track"]
+
+        for i in self.analysis_df_names:
+            self._analysis[i] = pd.DataFrame(analysis[i])
+
+    def plot(self):
+        """Show plots based on Spotify's own analysis."""
+        if not self._analysis:
+            # No analysis data, talk to the API
+            self._get_analysis()
+
+        for i in self.analysis_df_names:
+            self._analysis[i].plot(x="start")
+
+        plt.show()
 
     @property
     def id(self):
@@ -63,7 +99,38 @@ class Track:
 
     @property
     def analysis(self):
-        """Get the audio analysis about this track."""
+        """Get the audio analysis about this track.
+
+        Data follows the following form.
+        {
+          meta: {...},
+          track: {...},
+          bars: pd.DataFrame(columns=["start", "duration", "confidence"]),
+          beats: pd.DataFrame(columns=["start", "duration", "confidence"]),
+          sections: pd.DataFrame(columns=["start",
+                                          "duration",
+                                          "confidence",
+                                          "loudness",
+                                          "tempo",
+                                          "tempo_confidence",
+                                          "key",
+                                          "key_confidence",
+                                          "mode",
+                                          "mode_confidence",
+                                          "time_signature",
+                                          "time_signature_confidence"]),
+          segments: pd.DataFrame(columns=["start",
+                                          "duration",
+                                          "confidence",
+                                          "loudness_start",
+                                          "loudness_max_time",
+                                          "loudness_max",
+                                          "loudness_end",
+                                          "pitches",
+                                          "timber"]),
+          tatums: pd.DataFrame(columns=["start", "duration", "confidence"]),
+        }
+        """
         return self._analysis
 
 
@@ -201,15 +268,13 @@ def simmer_playlist(
 
     """
     p = Playlist(spotify, playlist_id)
-    p.to_disk(Path("playlist.json"))
-    p.plot(fmt_title="{name}: Original")
 
-    reorder_feature = "acousticness"
-    p.reorder_by_feature(reorder_feature)
-
-    p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
-
-    plt.show()
+    # p.to_disk(Path("playlist.json"))
+    # p.plot(fmt_title="{name}: Original")
+    # reorder_feature = "liveness"
+    # p.reorder_by_feature(reorder_feature)
+    # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
+    # plt.show()
 
 
 if __name__ == "__main__":
