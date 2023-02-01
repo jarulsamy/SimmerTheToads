@@ -140,3 +140,19 @@ def playlists(spotify):
     :param spotify: Current spotify OAuth session
     """
     return spotify.current_user_playlists()
+
+@app.route("/about")
+def about():
+    """
+    Give some information about the SimmerTheToad
+    """
+    return render_template("about.html")
+
+@app.route("/finished")
+def finished():
+    """
+    Displayed after the playlist has been created. 
+    Should probably be either a confirmation page with a link to the spotify playlist or 
+        the new playlist.
+    """
+    return render_template("finished.html")
