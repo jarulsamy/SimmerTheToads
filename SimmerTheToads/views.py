@@ -3,7 +3,7 @@ import functools
 import os
 
 import spotipy
-from flask import redirect, render_template, request, session
+from flask import jsonify, redirect, render_template, request, session
 from spotipy.oauth2 import SpotifyOAuth
 
 from . import app
@@ -140,3 +140,16 @@ def playlists(spotify):
     :param spotify: Current spotify OAuth session
     """
     return spotify.current_user_playlists()
+
+
+@app.route("/get_test")
+def get_test():
+    """Demo get endpoint."""
+    return jsonify({"key": "value", "ui": "perfect", "pages": 3})
+
+
+@app.route("/playlist", methods=["POST"])
+def playlist():
+    """Demo playlist post endpoint."""
+    print(request.json)
+    return jsonify(success=True)
