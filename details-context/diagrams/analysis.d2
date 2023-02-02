@@ -1,0 +1,105 @@
+Playlist: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  track_df: df
+}
+
+Track {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  metadata: dict
+  features: dict
+  analysis_metadata: dict
+  analysis: Analysis
+}
+
+track_df : {
+  shape: sql_table
+  index: int {constraint: primary_key}
+  id: int
+  acousticness: float
+  danceability: int
+  duration_ms: int
+  energy: float
+  instrumentalness: float
+  key: float
+  liveness: float
+  loudness: float
+  mode: int
+  speechiness: float
+  tempo: float
+  time_signature: int
+  track_href: str
+  valence: float
+  track: Track
+}
+
+Analysis : {
+  shape: sql_table
+  meta: dict
+  track: dict
+  bars: bars_df
+  beats: beats_df
+  sections: sections_df
+  segments: segments_df
+  tatums: tatums_df
+}
+
+bars_df : {
+  shape: sql_table
+  start: float
+  duration: float
+  confidence: float
+}
+
+beats_df : {
+  shape: sql_table
+  start: float
+  duration: float
+  confidence: float
+}
+
+sections_df : {
+  shape: sql_table
+  start: float
+  duration: float
+  confidence: float
+  loudness: float
+  tempo: float
+  tempo_confidence: float
+  key: float
+  key_confidence: float
+  mode: float
+  mode_confidence: float
+  time_signature: int
+  time_signature_confidence: float
+}
+
+segments_df : {
+  shape: sql_table
+  start: float
+  duration: float
+  confidence: float
+  loudness_start: float
+  loudness_max_time: float
+  loudness_max: float
+  loudness_end: float
+  pitches: list\[float\]
+  timber: list\[float\]
+}
+
+tatums_df : {
+  shape: sql_table
+  start: float
+  duration: float
+  confidence: float
+}
+
+Playlist.track_df -> track_df
+track_df.track -> Track
+Track.analysis -> Analysis
+Analysis.bars -> bars_df
+Analysis.beats -> beats_df
+Analysis.sections -> sections_df
+Analysis.segments -> segments_df
+Analysis.tatums -> tatums_df
