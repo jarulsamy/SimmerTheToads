@@ -32,6 +32,16 @@ We have written 1572 lines of code!! :D Our deliverables are as follows:
 - Test playlists exist (thanks to Lona's absurdly large song database), more to
   come.
 
+# Successes
+ - We have a working backend and frontend, woooh!
+ - We've made great progress with Spotify API integrations
+ - We're ahead on our development schedule, so our team can relax a bit as half of us are going to AAAI-23.
+
+# Challenges
+- Did not run into any major roadblocks/challenges other than the natural challenge of moving development along
+- Our main challenge right now is that we're struggling to determine what our plan is for analysing song metadata - i.e. by what attribute will we organize songs? A weighted avg? Crete our own? Etc.
+- Nothing in particular in mind for our mentor (Mike), just need to keep knocking our heads together.
+
 # Goals for the Next 3 Weeks
 
 ### Frontend
@@ -57,3 +67,9 @@ We have written 1572 lines of code!! :D Our deliverables are as follows:
 ### Miscellaneous Other Tasks
 
 - More playlists to use for comparison
+
+# Completion Confidence
+- Lona: 5
+- Josh: 4.5
+- Natalie:
+- Joseph:
