@@ -1,0 +1,7 @@
+chdir frontend
+screen -t "nodejs" npm start || exit
+
+split -v
+focus
+
+screen -t 'flask' flask --debug --app SimmerTheToads run
