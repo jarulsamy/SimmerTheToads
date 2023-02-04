@@ -3,7 +3,8 @@ import functools
 import os
 
 import spotipy
-from flask import jsonify, redirect, render_template, request, session
+from flask import (jsonify, redirect, render_template, request,
+                   send_from_directory, session)
 from spotipy.oauth2 import SpotifyOAuth
 
 from . import app
@@ -62,10 +63,15 @@ def logged_in(func):
     return wrapper
 
 
-@app.route("/")
-def index():
-    """Landing page."""
-    return render_template("index.html")
+# Serve React App
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def index(path):
+    """Serve auxiliarry files from React."""
+    if path != "" and os.path.exists(app.static_folder + "/" + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return render_template("index.html")
 
 
 @app.route("/login")
