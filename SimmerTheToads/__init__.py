@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from flask import Flask
+from flask_cors import CORS
 from flask_session import Session
 
 line = "=" * 80
@@ -27,9 +28,17 @@ app = Flask(
 app.config["SECRET_KEY"] = os.urandom(64)
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = "./.flask_session"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_HTTPONLY"] = False
+
 Session(app)
+CORS(app, supports_credentials=True)
 
 
-from .views import index
+from .views import api_bp
+
+CORS(api_bp, support_credentials=True)
+
+app.register_blueprint(api_bp, url_prefix="/api")
 
 __version__ = "0.0.1"

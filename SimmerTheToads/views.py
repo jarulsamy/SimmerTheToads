@@ -1,13 +1,12 @@
 """Contains all the 'views' that the flask application itself uses."""
 import functools
+import json
 import os
 
 import spotipy
-from flask import (jsonify, redirect, render_template, request,
-                   send_from_directory, session)
+from flask import (Blueprint, Response, jsonify, redirect, render_template,
+                   request, session, url_for)
 from spotipy.oauth2 import SpotifyOAuth
-
-from . import app
 
 # Retrieve these values from the spotify developer dashboard:
 #   https://developer.spotify.com/dashboard/applications
@@ -17,13 +16,17 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 # This needs to be set in your spotify dashboard!
-REDIRECT_URI = "http://127.0.0.1:5000/login_callback"
+REDIRECT_URI = "http://127.0.0.1:5000/api/login_callback"
 OAUTH_SCOPES = [
     "playlist-read-private",
     "playlist-read-collaborative",
     "playlist-modify-private",
     "playlist-modify-public",
 ]
+FRONTEND_URL = "http://127.0.0.1:3000"
+
+# Setup the API blueprints
+api_bp = Blueprint("api_bp", __name__)
 
 
 def logged_in(func):
@@ -39,7 +42,7 @@ def logged_in(func):
 
     Sample usage:
 
-        @app.route("/my-cool-endpoint")
+        @api_bp.route("/my-cool-endpoint")
         @logged_in
         def my_endpoint(spotify): # This parameter is required!
             . . .
@@ -54,8 +57,10 @@ def logged_in(func):
             client_secret=CLIENT_SECRET,
             redirect_uri=REDIRECT_URI,
         )
+
         if not auth_manager.validate_token(cache_handler.get_cached_token()):
-            return redirect("/login")
+            # return redirect(url_for("api_bp.login"))
+            return jsonify({"message": "Access denied"}), 401
 
         spotify = spotipy.Spotify(auth_manager=auth_manager)
         return func(*args, **kwargs, spotify=spotify)
@@ -63,18 +68,13 @@ def logged_in(func):
     return wrapper
 
 
-# Serve React App
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def index(path):
-    """Serve auxiliarry files from React."""
-    if path != "" and os.path.exists(app.static_folder + "/" + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return render_template("index.html")
+@api_bp.route("/")
+def index():
+    """Template response."""
+    return jsonify({"message": "Hello from Flask!"})
 
 
-@app.route("/login")
+@api_bp.route("/login", methods=["POST"])
 def login():
     """Login to spotify's API using OAuth2.
 
@@ -95,12 +95,12 @@ def login():
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 1: Redirect to spotify OAuth when not logged in.
         auth_url = auth_manager.get_authorize_url()
-        return redirect(auth_url)
+        return jsonify({"auth_url": auth_url})
 
-    return redirect("/info")
+    return 500
 
 
-@app.route("/login_callback")
+@api_bp.route("/login_callback")
 def login_callback():
     """Endpoint to receive token from Spotify's redirect."""
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -115,17 +115,19 @@ def login_callback():
     if request.args.get("code"):
         # Step 2: Redirect from spotify back here.
         auth_manager.get_access_token(request.args.get("code"))
-        return redirect("/login")
+        return redirect(f"{FRONTEND_URL}/")
+
+    return redirect(request.referrer or url_for("api_bp.login"))
 
 
-@app.route("/logout")
+@api_bp.route("/logout")
 def logout():
     """Discard the token from the current session, logging out the user."""
     session.pop("token_info", None)
     return redirect("/")
 
 
-@app.route("/info")
+@api_bp.route("/info")
 @logged_in
 def info(spotify):
     """Page describing information about the currently logged in user.
@@ -138,23 +140,23 @@ def info(spotify):
     )
 
 
-@app.route("/playlists")
+@api_bp.route("/playlists")
 @logged_in
 def playlists(spotify):
     """Get all the playlists of the current user.
 
     :param spotify: Current spotify OAuth session
     """
-    return spotify.current_user_playlists()
+    return jsonify(spotify.current_user_playlists())
 
 
-@app.route("/get_test")
+@api_bp.route("/get_test")
 def get_test():
     """Demo get endpoint."""
     return jsonify({"key": "value", "ui": "perfect", "pages": 3})
 
 
-@app.route("/playlist", methods=["POST"])
+@api_bp.route("/playlist", methods=["POST"])
 def playlist():
     """Demo playlist post endpoint."""
     print(request.json)
