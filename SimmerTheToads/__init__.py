@@ -28,16 +28,21 @@ app = Flask(
 app.config["SECRET_KEY"] = os.urandom(64)
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = "./.flask_session"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_HTTPONLY"] = False
-
+cors_args = dict(
+    resources={r"*": {"origins": r"http://127.0.0.1:5000"}},
+    expose_headers={"Content-Type", "X-CSRFToken"},
+    supports_credentials=True,
+)
 Session(app)
-CORS(app, supports_credentials=True)
+CORS(app, **cors_args)
 
 
 from .views import api_bp
 
-CORS(api_bp, support_credentials=True)
+CORS(api_bp, **cors_args)
 
 app.register_blueprint(api_bp, url_prefix="/api")
 
