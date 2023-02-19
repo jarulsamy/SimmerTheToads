@@ -1,11 +1,10 @@
 """Contains all the 'views' that the flask application itself uses."""
 import functools
-import json
 import os
 
 import spotipy
-from flask import (Blueprint, Response, jsonify, redirect, render_template,
-                   request, session, url_for)
+from flask import (Blueprint, jsonify, redirect, render_template, request,
+                   session)
 from spotipy.oauth2 import SpotifyOAuth
 
 # Retrieve these values from the spotify developer dashboard:
@@ -16,6 +15,7 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 # This needs to be set in your spotify dashboard!
+# TODO: This should probably be in an environment variable...
 REDIRECT_URI = "http://127.0.0.1:5000/api/login_callback"
 OAUTH_SCOPES = [
     "playlist-read-private",
@@ -23,7 +23,6 @@ OAUTH_SCOPES = [
     "playlist-modify-private",
     "playlist-modify-public",
 ]
-FRONTEND_URL = "http://127.0.0.1:3000"
 
 # Setup the API blueprints
 api_bp = Blueprint("api_bp", __name__)
@@ -59,7 +58,6 @@ def logged_in(func):
         )
 
         if not auth_manager.validate_token(cache_handler.get_cached_token()):
-            # return redirect(url_for("api_bp.login"))
             return jsonify({"message": "Access denied"}), 401
 
         spotify = spotipy.Spotify(auth_manager=auth_manager)
@@ -97,7 +95,8 @@ def login():
         auth_url = auth_manager.get_authorize_url()
         return jsonify({"auth_url": auth_url})
 
-    return 500
+    # TODO: Handle closing the Oauth window if the user is already logged in.
+    return jsonify(success=True)
 
 
 @api_bp.route("/login_callback")
@@ -115,9 +114,10 @@ def login_callback():
     if request.args.get("code"):
         # Step 2: Redirect from spotify back here.
         auth_manager.get_access_token(request.args.get("code"))
-        return redirect(f"{FRONTEND_URL}/")
+        return "<script>window.close()</script>"
 
-    return redirect(request.referrer or url_for("api_bp.login"))
+    # TODO: Some auth error occurred, handle appropiately
+    return 500
 
 
 @api_bp.route("/logout")
@@ -156,8 +156,7 @@ def get_test():
     return jsonify({"key": "value", "ui": "perfect", "pages": 3})
 
 
-@api_bp.route("/playlist", methods=["POST"])
+@api_bp.route("/playlist", methods=["GET"])
 def playlist():
     """Demo playlist post endpoint."""
-    print(request.json)
     return jsonify(success=True)
