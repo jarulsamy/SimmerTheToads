@@ -3,8 +3,7 @@ import functools
 import os
 
 import spotipy
-from flask import (Blueprint, jsonify, redirect, render_template, request,
-                   session)
+from flask import Blueprint, jsonify, redirect, request, session
 from spotipy.oauth2 import SpotifyOAuth
 
 # Retrieve these values from the spotify developer dashboard:
@@ -125,19 +124,6 @@ def logout():
     """Discard the token from the current session, logging out the user."""
     session.pop("token_info", None)
     return redirect("/")
-
-
-@api_bp.route("/info")
-@logged_in
-def info(spotify):
-    """Page describing information about the currently logged in user.
-
-    :param spotify: Current spotify OAuth session
-    """
-    return render_template(
-        "info.html",
-        display_name=spotify.me()["display_name"],
-    )
 
 
 @api_bp.route("/playlists")
