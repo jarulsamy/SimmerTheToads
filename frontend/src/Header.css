@@ -1,0 +1,15 @@
+.header {
+    background-color: #749C75;
+    min-height: 50px;
+}
+
+.logo {
+    height: 50px;
+    float: left;
+    padding: 10px;
+}
+
+.title {
+    font: lighter;
+    padding: 20px;
+}
