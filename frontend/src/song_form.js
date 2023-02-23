@@ -1,6 +1,6 @@
-"use strict";
+// "use strict";
 
-// import React from "react";
+import React from "react";
 // import ReactDOM from "react-dom/client";
 import APIService from './API_service.js';
 
@@ -57,10 +57,10 @@ class SongForm extends React.Component {
       // Don't refresh the page
       e.preventDefault();
       
-      if (id == "submit1") {
+      if (id === "submit1") {
         this.handle_submit_add_song(e);
       }
-      if (id == "submit2") {
+      if (id === "submit2") {
         this.handle_submit_send_playlist(e);
       }
     }
@@ -93,6 +93,7 @@ class SongForm extends React.Component {
   
 }
 
-const domContainer = document.querySelector("#songs");
-const root = ReactDOM.createRoot(domContainer);
-root.render(e(SongForm));
+// const domContainer = document.querySelector("#songs");
+// const root = ReactDOM.createRoot(domContainer);
+// root.render(e(SongForm));
+export default SongForm;

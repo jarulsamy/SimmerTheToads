@@ -1,16 +1,15 @@
-import logo from "./logo.svg";
+// import logo from "./logo.svg";
 import "./App.css";
-import Flask from "./Flask";
-import axios from "axios";
+// import axios from "axios";
 import React from "react";
+import Header from "./Header";
+import CreateTabs from "./Tabs";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <p>Simmer the Toads, now with more JS!</p>
-        <Flask />
-      </header>
+      <Header />
+      <CreateTabs />
     </div>
   );
 }
