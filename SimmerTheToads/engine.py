@@ -1,12 +1,18 @@
 """Primary playlist manipulation module."""
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Type
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from joblib import Parallel, delayed
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from sklearn.cluster import AgglomerativeClustering, SpectralClustering
+from sklearn.preprocessing import StandardScaler
 from spotipy.client import Spotify
 
 # pd.set_option("display.max_rows", None)
@@ -138,6 +144,7 @@ class Playlist:
     id: str
     name: Optional[str]
     df: pd.DataFrame
+    _spotify: Spotify
 
     FEATURE_COLUMNS = [
         "id",
@@ -161,15 +168,16 @@ class Playlist:
 
     def __init__(self, spotify: Spotify, id: str):
         self.id = id
-        self.metadata = spotify.playlist(id)
+        self._spotify = spotify
+        self.metadata = self._spotify.playlist(id)
 
         # Retrieve all the tracks within the playlist
         # Handle the pagination
         track_items = []
-        result = spotify.user_playlist_tracks(playlist_id=self.id)
+        result = self._spotify.user_playlist_tracks(playlist_id=self.id)
         track_items.extend(result["items"])
         while result["next"]:
-            result = spotify.next(result)
+            result = self._spotify.next(result)
             track_items.extend(result["items"])
 
         track_ids = [i["track"]["id"] for i in track_items]
@@ -178,10 +186,10 @@ class Playlist:
         # Do this outside of the Track class to leverage the batched API.
         features = []
         for chunk in grouper(track_ids, min(len(track_ids), 100)):
-            features.extend(spotify.audio_features(list(chunk)))
+            features.extend(self._spotify.audio_features(list(chunk)))
 
         results = Parallel(n_jobs=os.cpu_count(), prefer="threads")(
-            delayed(Track)(spotify, m["track"], f)
+            delayed(Track)(self._spotify, m["track"], f)
             for m, f in zip(track_items, features)
         )
         rows = [i.features for i in results]
@@ -194,10 +202,29 @@ class Playlist:
         serializeable_df = self.df.drop(["track"], axis=1)
         serializeable_df.to_json(path, orient="records", indent=4)
 
+    def to_spotify(self):
+        """Write the playlist back to spotify."""
+        new_tracks = list(self.df["id"])
+        self._spotify.playlist_replace_items(self.id, new_tracks)
+
     def reorder_by_feature(self, feature):
         """Reorder the playlist by a single feature."""
         self.df = self.df.sort_values(by=feature)
         self.df = self.df.reset_index()
+
+    def corr_matrix(self, fmt_title=None) -> (Figure, Axes):
+        """Generate a correlation matrix of the data features."""
+        fig, ax = plt.subplots()
+        matrix = self.df.corr(numeric_only=True)
+        sns.heatmap(matrix, annot=True, ax=ax)
+
+        if fmt_title is None:
+            title = f"{self.metadata['name']}: Correlation Matrix"
+        else:
+            title = fmt_title.format(name=self.metadata["name"])
+        ax.set_title(title)
+
+        return fig, ax
 
     def plot(self, fmt_title=None):
         """Show some simple statistics about this playlist."""
@@ -250,9 +277,63 @@ class Playlist:
         distplots_fig.tight_layout()
 
 
+class PlaylistEvaluator(ABC):
+    """Abstract base class for playlist raters."""
+
+    @abstractmethod
+    def __init__(self, playlist: Playlist):
+        self._playlist = playlist
+
+    @abstractmethod
+    def reorder(self):
+        """Reorder the songs within the existing playlist."""
+        pass
+
+    @abstractmethod
+    def suggest(self):
+        """Suggest songs to add in the playlist."""
+        pass
+
+    @property
+    def playlist(self) -> Playlist:
+        """Get the playlist being evaluated."""
+        return self._playlist
+
+
+class ClusteringEvaluator(PlaylistEvaluator):
+    def __init__(self, playlist: Playlist):
+        super().__init__(playlist)
+
+    def _preprocess_features(self) -> np.array:
+        # Assume all numeric features are valid input features
+        numeric_df = self._playlist.df.select_dtypes(include=[np.number])
+        arr = numeric_df.to_numpy()
+        scaler = StandardScaler()
+        return scaler.fit_transform(arr)
+
+    def reorder(self):
+        """Reorder playlist using agglomerative clustering."""
+        # Agglomerative
+        features_matrix = self._preprocess_features()
+        clustering = AgglomerativeClustering(
+            n_clusters=None,
+            distance_threshold=7,
+        )
+        labels = clustering.fit_predict(features_matrix)
+        self._playlist.df["cluster_class"] = labels
+        print(clustering.distances_)
+        print(self._playlist.df)
+        exit()
+        self._playlist.df = self._playlist.df.sort_values(by="cluster_class")
+
+    def suggest(self):
+        raise NotImplementedError
+
+
 def simmer_playlist(
     spotify: Spotify,
     playlist_id: str,
+    evaluator: Type[PlaylistEvaluator],
 ) -> list[Track]:
     """Reorder / add songs to playlist for simmering.
 
@@ -261,18 +342,31 @@ def simmer_playlist(
     the playlist. This aims to be an abstraction to avoid requiring the Spotify
     API to be passed deep into the engine.
 
+    TODO: Reword this with new 'Evaluator' model.
+
     :param spotify: Current spotify OAuth session
     :param playlist_id: ID of the playlist to simmer.
 
     """
     p = Playlist(spotify, playlist_id)
-
+    p.corr_matrix()
     p.plot(fmt_title="{name}: Original")
 
-    reorder_feature = "liveness"
-    p.reorder_by_feature(reorder_feature)
+    e = evaluator(p)
+    e.reorder()
 
-    p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
+    p.plot(
+        fmt_title="{{name}}: Reordered by {feature}".format(
+            feature=evaluator.__name__,
+        )
+    )
+
+    # Propogate local changes back to spotify playlist
+    # p.to_spotify()
+
+    # reorder_feature = "liveness"
+    # p.reorder_by_feature(reorder_feature)
+    # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
 
     plt.show()
 
@@ -301,7 +395,6 @@ if __name__ == "__main__":
         redirect_uri=REDIRECT_URI,
         show_dialog=True,
     )
-
     spotify = spotipy.Spotify(auth_manager=auth_manager)
 
     # Just an easy way to quickly switch between playlists for testing.
@@ -312,7 +405,11 @@ if __name__ == "__main__":
         "Lona and Josh's Code Think Tank": "0GJIoDOUsoSS2IDWniCTqP",
         "The Big Bach": "4OFbt8ZZOhE0oZcC4GGBMO",
         "godawful amalgamation": "0KOMGaR3mgeymmUBoN0ZlQ",
-        "close but no cigar": "78C62xSuql1V2jwMvonI4N",
+        "close but no cigar copy": "5jrJfrjQsK1H4ebNdPvafK",
         "manic pixie dream girl complex": "3ZL5feDBYxJSWR6zg7EDeu",
     }
-    simmer_playlist(spotify, playlists["The Big Bach"])
+    simmer_playlist(
+        spotify,
+        playlists["close but no cigar copy"],
+        ClusteringEvaluator,
+    )
