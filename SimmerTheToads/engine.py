@@ -11,13 +11,13 @@ import seaborn as sns
 from joblib import Parallel, delayed
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from sklearn.cluster import AgglomerativeClustering, SpectralClustering
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
 from spotipy.client import Spotify
 
-# pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
+plt.style.use("seaborn-v0_8-paper")
 
 
 def grouper(iterable, n):
@@ -251,6 +251,8 @@ class Playlist:
             "time_signature",
         ]
 
+        hue = "cluster_class_outer" if "cluster_class_outer" in self.df else None
+        print(hue)
         for i, v in enumerate(relevant_cols):
             sns.lineplot(
                 data=self.df,
@@ -258,11 +260,13 @@ class Playlist:
                 y=v,
                 ax=lineplots_axes[i % (ncols + 1)][i // nrows],
                 markers=True,
+                hue=hue,
             )
             sns.histplot(
                 data=self.df,
                 x=v,
                 ax=distplots_axes[i % (ncols + 1)][i // nrows],
+                hue=hue,
             )
 
         if fmt_title is None:
@@ -301,30 +305,72 @@ class PlaylistEvaluator(ABC):
 
 
 class ClusteringEvaluator(PlaylistEvaluator):
+    """Evaluate playlists using sklearn's clustering algorithms."""
+
     def __init__(self, playlist: Playlist):
         super().__init__(playlist)
 
-    def _preprocess_features(self) -> np.array:
+    def _preprocess_features(
+        self,
+        df: Optional[pd.DataFrame] = None,
+    ) -> np.array:
         # Assume all numeric features are valid input features
-        numeric_df = self._playlist.df.select_dtypes(include=[np.number])
+        if df is None:
+            numeric_df = self._playlist.df.select_dtypes(include=[np.number])
+        else:
+            numeric_df = df.select_dtypes(include=[np.number])
+
         arr = numeric_df.to_numpy()
         scaler = StandardScaler()
-        return scaler.fit_transform(arr)
+        scaled = scaler.fit_transform(arr)
+        return np.nan_to_num(scaled)
 
     def reorder(self):
         """Reorder playlist using agglomerative clustering."""
         # Agglomerative
         features_matrix = self._preprocess_features()
+
+        # Get some initial distances to help guide our search
         clustering = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=7,
+            linkage="complete",
         )
         labels = clustering.fit_predict(features_matrix)
-        self._playlist.df["cluster_class"] = labels
-        print(clustering.distances_)
-        print(self._playlist.df)
-        exit()
-        self._playlist.df = self._playlist.df.sort_values(by="cluster_class")
+        # from pprint import pprint
+
+        # pprint(clustering.get_params(deep=True))
+        # exit()
+
+        self._playlist.df["cluster_class_outer"] = labels
+
+        # TODO: We probably want to do some inter-cluster ordering / opt here
+        classes = sorted(self._playlist.df["cluster_class_outer"].unique())
+        for i in classes:
+            df_i = self._playlist.df.loc[self._playlist.df["cluster_class_outer"] == i]
+            if len(df_i) == 1:
+                # Handle if only one track within group
+                self._playlist.df.loc[
+                    self._playlist.df["cluster_class_outer"] == i,
+                    "cluster_class_inner",
+                ] = [0]
+                continue
+
+            features_matrix = self._preprocess_features(df_i)
+            clustering = AgglomerativeClustering(
+                n_clusters=None,
+                distance_threshold=3,
+                linkage="complete",
+            )
+            labels = clustering.fit_predict(features_matrix)
+            self._playlist.df.loc[
+                self._playlist.df["cluster_class_outer"] == i,
+                "cluster_class_inner",
+            ] = labels
+
+        self._playlist.df = self._playlist.df.sort_values(
+            by=["cluster_class_outer", "cluster_class_inner"]
+        )
 
     def suggest(self):
         raise NotImplementedError
@@ -334,6 +380,7 @@ def simmer_playlist(
     spotify: Spotify,
     playlist_id: str,
     evaluator: Type[PlaylistEvaluator],
+    to_spotify: Optional[bool] = False,
 ) -> list[Track]:
     """Reorder / add songs to playlist for simmering.
 
@@ -349,26 +396,28 @@ def simmer_playlist(
 
     """
     p = Playlist(spotify, playlist_id)
-    p.corr_matrix()
-    p.plot(fmt_title="{name}: Original")
+    # p.corr_matrix()
+    # p.plot(fmt_title="{name}: Original")
 
     e = evaluator(p)
     e.reorder()
 
-    p.plot(
-        fmt_title="{{name}}: Reordered by {feature}".format(
-            feature=evaluator.__name__,
-        )
-    )
+    # p.plot(
+    #     fmt_title="{{name}}: Reordered by {feature}".format(
+    #         feature=evaluator.__name__,
+    #     )
+    # )
+    print(p.df)
 
     # Propogate local changes back to spotify playlist
-    # p.to_spotify()
+    if to_spotify:
+        p.to_spotify()
 
     # reorder_feature = "liveness"
     # p.reorder_by_feature(reorder_feature)
     # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
 
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -407,9 +456,13 @@ if __name__ == "__main__":
         "godawful amalgamation": "0KOMGaR3mgeymmUBoN0ZlQ",
         "close but no cigar copy": "5jrJfrjQsK1H4ebNdPvafK",
         "manic pixie dream girl complex": "3ZL5feDBYxJSWR6zg7EDeu",
+        "kotlin": "5IrrDF6L9eiXjIAS6qTx5E",
+        "mainstream": "0Or7sOLeS5ikhhOaWWRyzC",
+        "girls party!": "2ZleY8ep3CsifUlv8rECfG",
     }
     simmer_playlist(
         spotify,
-        playlists["close but no cigar copy"],
+        playlists["girls party!"],
         ClusteringEvaluator,
+        to_spotify=True,
     )
