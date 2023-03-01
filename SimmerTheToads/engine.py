@@ -13,7 +13,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, RobustScaler, StandardScaler
 from spotipy.client import Spotify
 
 pd.set_option("display.max_columns", None)
@@ -378,7 +378,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         numeric_df = df.select_dtypes(include=[np.number])
         arr = numeric_df.to_numpy()
         scaler = StandardScaler()
-        scaled = scaler.fit_transform(arr)
+        scaled = scaler.fit_transform(RobustScaler().fit_transform(arr))
 
         # Add artists column, exclude this from scaling
         scaled = np.append(scaled, artists, axis=1)
@@ -400,7 +400,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         # Get some initial distances to help guide our search
         clustering = AgglomerativeClustering(
             n_clusters=None,
-            distance_threshold=7,
+            distance_threshold=12,
         )
         labels = clustering.fit_predict(features_matrix)
 
@@ -436,11 +436,11 @@ def simmer_playlist(
     e = evaluator(p)
     e.reorder()
 
-    p.plot(
-        fmt_title="{{name}}: Reordered by {feature}".format(
-            feature=evaluator.__name__,
-        )
-    )
+    # p.plot(
+    #     fmt_title="{{name}}: Reordered by {feature}".format(
+    #         feature=evaluator.__name__,
+    #     )
+    # )
     print(p.df)
 
     # Propogate local changes back to spotify playlist
@@ -497,7 +497,7 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["mainstream"])
+    p = Playlist(spotify, playlists["4 cat copy"])
     # if cache_path.is_file():
     #     with open(cache_path, "rb") as f:
     #         p = pickle.load(f)
@@ -509,5 +509,5 @@ if __name__ == "__main__":
     simmer_playlist(
         p,
         ClusteringEvaluator,
-        to_spotify=False,
+        to_spotify=True,
     )
