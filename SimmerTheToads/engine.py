@@ -1,12 +1,15 @@
 """Primary playlist manipulation module."""
 import os
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Type
 
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
+import scipy
 import seaborn as sns
 from joblib import Parallel, delayed
 from matplotlib.axes import Axes
@@ -19,6 +22,7 @@ from spotipy.client import Spotify
 
 pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
+np.set_printoptions(suppress=True)
 plt.style.use("seaborn-v0_8-paper")
 
 
@@ -57,7 +61,7 @@ class Track:
 
         self._get_analysis()
 
-    def _get_analysis(self):
+    def _get_analysis(self) -> None:
         track_remove_keys = (
             "codestring",
             "code_version",
@@ -81,7 +85,7 @@ class Track:
             self._analysis[i] = pd.DataFrame(analysis[i])
             self._analysis[i] = self._analysis[i].query("confidence > 0.7")
 
-    def plot(self):
+    def plot(self) -> None:
         """Show plots based on Spotify's own analysis."""
         for i in self.analysis_df_names:
             self.analysis[i].plot(x="start")
@@ -89,22 +93,22 @@ class Track:
         plt.show()
 
     @property
-    def id(self):
+    def id(self) -> str:
         """Get the Spotify ID of this track."""
         return self._metadata["id"]
 
     @property
-    def metadata(self):
+    def metadata(self) -> dict:
         """Get the raw metadata about this track."""
         return self._metadata
 
     @property
-    def features(self):
+    def features(self) -> dict:
         """Get the audio features about this track."""
         return self._features
 
     @property
-    def analysis(self):
+    def analysis(self) -> dict:
         """Get the audio analysis about this track.
 
         Data follows the following form.
@@ -140,30 +144,37 @@ class Track:
         return self._analysis
 
     @property
-    def num_bars(self):
+    def num_bars(self) -> int:
+        """Get the number of bars."""
         return len(self.analysis["bars"])
 
     @property
-    def num_beats(self):
+    def num_beats(self) -> int:
+        """Get the number of beats."""
         return len(self.analysis["beats"])
 
     @property
-    def num_sections(self):
+    def num_sections(self) -> int:
+        """Get the number of sections."""
         return len(self.analysis["sections"])
 
     @property
-    def num_segments(self):
+    def num_segments(self) -> int:
+        """Get the number of segments."""
         return len(self.analysis["segments"])
 
     @property
-    def num_tatums(self):
+    def num_tatums(self) -> int:
+        """Get the number of tatums."""
         return len(self.analysis["tatums"])
 
-    def get_analysis_features(self, num_bars, num_beats, num_sections, num_tatums):
+    def get_analysis_features(
+        self, num_bars, num_beats, num_sections, num_tatums
+    ) -> dict:
+        """TODO."""
         base_features = self.features
         analysis = self.analysis
 
-        # Add artist
         try:
             base_features["artist"] = self.metadata["artists"][0]["name"]
         except KeyError:
@@ -204,7 +215,8 @@ class Track:
 
         return base_features
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Represent a track as 'name', 'artist'."""
         name = self.metadata["name"][:16]
         artist = self.metadata["artists"][0]["name"][:16]
         return f"{name}, {artist}"
@@ -345,7 +357,6 @@ class Playlist:
         ]
 
         hue = "cluster_class_outer" if "cluster_class_outer" in self.df else None
-        print(hue)
         for i, v in enumerate(relevant_cols):
             sns.lineplot(
                 data=self.df,
@@ -406,45 +417,90 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
     def _preprocess_features(
         self,
         df: Optional[pd.DataFrame] = None,
+        scale: bool = True,
     ) -> np.array:
         if df is None:
             df = self._playlist.df
 
         # Ordinal encode the artists
-        le = LabelEncoder()
-        artists = le.fit_transform(df["artist"])
-        artists = np.atleast_2d(artists).T
+        if not np.issubdtype(df["artist"].dtype, np.number):
+            le = LabelEncoder()
+            artist = le.fit_transform(df["artist"])
+            artist = np.atleast_2d(artist).T
+            df["artist"] = artist
 
         # Assume all numeric features are valid input features
         numeric_df = df.select_dtypes(include=[np.number])
-        arr = numeric_df.to_numpy()
-        scaler = MinMaxScaler()
-        scaled = scaler.fit_transform(RobustScaler().fit_transform(arr))
+        if not scale:
+            return numeric_df.to_numpy()
 
-        # Add artists column, exclude this from scaling
-        scaled = np.append(scaled, artists, axis=1)
+        r_scaler = RobustScaler()
+        mm_scaler = MinMaxScaler()
+
+        # Exclude categorical features from scaling
+        artist = numeric_df["artist"]
+        numeric_df = numeric_df.drop(labels=["artist"], axis=1)
+        # TODO: Investigate the deprecation warning
+        numeric_df[:] = r_scaler.fit_transform(numeric_df)
+        numeric_df[:] = mm_scaler.fit_transform(numeric_df)
+        numeric_df["artist"] = artist
+        scaled = numeric_df.to_numpy()
 
         # Principle component analysis
-        pca = PCA(n_components=10)
-        scaled = pca.fit_transform(scaled)
-        print(f"{np.sum(pca.explained_variance_ratio_)=}")
+        try:
+            pca = PCA(n_components=10)
+            scaled = pca.fit_transform(scaled)
+        except ValueError:
+            # Very few tracks or features.
+            pca = PCA(n_components=min(*numeric_df.shape))
+            scaled = pca.fit_transform(scaled)
 
         return scaled
 
-    def reorder(self):
+    def _cluster(self):
         """Reorder playlist using agglomerative clustering."""
-        # Agglomerative
-        features_matrix = self._preprocess_features()
-
-        print(features_matrix)
-
+        feature_matrix = self._preprocess_features()
         clustering = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=3,
         )
-        labels = clustering.fit_predict(features_matrix)
+        labels = clustering.fit_predict(feature_matrix)
         self._playlist.df["cluster_class_outer"] = labels
-        self._playlist.df = self._playlist.df.sort_values(by=["cluster_class_outer"])
+        self._playlist.df = self._playlist.df.sort_values(
+            by=["cluster_class_outer"],
+        )
+
+    def _subcluster_opt(self):
+        for cluster in self._playlist.df["cluster_class_outer"].unique():
+            df = self._playlist.df.query("cluster_class_outer == @cluster")
+            # Compute euclidean distance of all the features within the matrix
+            # TODO: Artist will definitely be wrong during this calculation...
+            feature_matrix = df.select_dtypes(include=[np.number])
+            features_matrix = features_matrix.to_numpy()
+            distance_matrix = scipy.spatial.distance_matrix(
+                feature_matrix, feature_matrix
+            )
+
+            # Convert to int for some possible speedup. These numbers are always
+            # very large, so any rounding error is basically irrelevant.
+            distance_matrix = distance_matrix.astype(int)
+
+            G = nx.from_numpy_array(distance_matrix)
+            tsp = nx.approximation.traveling_salesman_problem
+            path = tsp(G, cycle=False)
+
+            self._playlist.df.loc[
+                self._playlist.df.eval("cluster_class_outer == @cluster"),
+                "cluster_class_inner",
+            ] = path
+
+        print(self._playlist.df)
+        exit()
+
+    def reorder(self):
+        """Reorder playlist combining several techniques."""
+        self._cluster()
+        # self._subcluster_opt()
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
@@ -533,10 +589,11 @@ if __name__ == "__main__":
         "mainstream": "0Or7sOLeS5ikhhOaWWRyzC",
         "girls party!": "2ZleY8ep3CsifUlv8rECfG",
         "4 cat copy": "3r4jK8owZWGUe8ET3YqPFG",
+        "4 songs": "4C9aR5IxztGLZNWQrdO8Y1",
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["mainstream"])
+    p = Playlist(spotify, playlists["kotlin"])
     # if cache_path.is_file():
     #     with open(cache_path, "rb") as f:
     #         p = pickle.load(f)
