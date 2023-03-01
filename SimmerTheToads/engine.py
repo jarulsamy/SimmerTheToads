@@ -11,8 +11,9 @@ import seaborn as sns
 from joblib import Parallel, delayed
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from spotipy.client import Spotify
 
 pd.set_option("display.max_columns", None)
@@ -136,6 +137,48 @@ class Track:
         """
         return self._analysis
 
+    @property
+    def num_sections(self):
+        return len(self.analysis["sections"])
+
+    @property
+    def num_segments(self):
+        return len(self.analysis["segments"])
+
+    def get_analysis_features(self, num_sections):
+        base_features = self.features
+        analysis = self.analysis
+
+        # Add artist
+        try:
+            base_features["artist"] = self.metadata["artists"][0]["name"]
+        except KeyError:
+            base_features["artist"] = None
+
+        rel_columns = [
+            "start",
+            "loudness",
+            "tempo",
+            "key",
+            "mode",
+            "time_signature",
+        ]
+
+        # Mean of groups of sections
+        sections = analysis["sections"]
+        sections = sections[rel_columns]
+        sections = np.array_split(sections, num_sections)
+        for i, v in enumerate(sections):
+            for column in v.columns:
+                base_features[f"section_{column}_{i}"] = v[column].mean()
+
+        return base_features
+
+    def __repr__(self):
+        name = self.metadata["name"][:16]
+        artist = self.metadata["artists"][0]["name"][:16]
+        return f"{name}, {artist}"
+
 
 class Playlist:
     """Represent a Spotify playlist."""
@@ -192,9 +235,18 @@ class Playlist:
             delayed(Track)(self._spotify, m["track"], f)
             for m, f in zip(track_items, features)
         )
-        rows = [i.features for i in results]
+        min_sections = min(results, key=lambda x: x.num_sections).num_sections
 
-        self.df = pd.DataFrame(rows, columns=self.FEATURE_COLUMNS)
+        rows = [i.get_analysis_features(min_sections) for i in results]
+        self.df = pd.DataFrame(rows)
+        self.df = self.df.drop(
+            labels=["type", "analysis_url"],
+            axis=1,
+            errors="ignore",
+        )
+
+        # Move track column to beginning for ease of reading output
+        self.df.insert(0, "track", self.df.pop("track"))
 
     def to_disk(self, path: Path):
         """Dump the metadata to a JSON file on disk."""
@@ -281,7 +333,7 @@ class Playlist:
         distplots_fig.tight_layout()
 
 
-class PlaylistEvaluator(ABC):
+class PlaylistEvaluatorBase(ABC):
     """Abstract base class for playlist raters."""
 
     @abstractmethod
@@ -304,7 +356,7 @@ class PlaylistEvaluator(ABC):
         return self._playlist
 
 
-class ClusteringEvaluator(PlaylistEvaluator):
+class ClusteringEvaluator(PlaylistEvaluatorBase):
     """Evaluate playlists using sklearn's clustering algorithms."""
 
     def __init__(self, playlist: Playlist):
@@ -314,72 +366,55 @@ class ClusteringEvaluator(PlaylistEvaluator):
         self,
         df: Optional[pd.DataFrame] = None,
     ) -> np.array:
-        # Assume all numeric features are valid input features
         if df is None:
-            numeric_df = self._playlist.df.select_dtypes(include=[np.number])
-        else:
-            numeric_df = df.select_dtypes(include=[np.number])
+            df = self._playlist.df
 
+        # Ordinal encode the artists
+        le = LabelEncoder()
+        artists = le.fit_transform(df["artist"])
+        artists = np.atleast_2d(artists).T
+
+        # Assume all numeric features are valid input features
+        numeric_df = df.select_dtypes(include=[np.number])
         arr = numeric_df.to_numpy()
         scaler = StandardScaler()
         scaled = scaler.fit_transform(arr)
-        return np.nan_to_num(scaled)
+
+        # Add artists column, exclude this from scaling
+        scaled = np.append(scaled, artists, axis=1)
+
+        # Principle component analysis
+        pca = PCA(n_components=10)
+        scaled = pca.fit_transform(scaled)
+        print(f"{np.sum(pca.explained_variance_ratio_)=}")
+
+        return scaled
 
     def reorder(self):
         """Reorder playlist using agglomerative clustering."""
         # Agglomerative
         features_matrix = self._preprocess_features()
 
+        print(features_matrix)
+
         # Get some initial distances to help guide our search
         clustering = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=7,
-            linkage="complete",
         )
         labels = clustering.fit_predict(features_matrix)
-        # from pprint import pprint
-
-        # pprint(clustering.get_params(deep=True))
-        # exit()
 
         self._playlist.df["cluster_class_outer"] = labels
 
-        # TODO: We probably want to do some inter-cluster ordering / opt here
-        classes = sorted(self._playlist.df["cluster_class_outer"].unique())
-        for i in classes:
-            df_i = self._playlist.df.loc[self._playlist.df["cluster_class_outer"] == i]
-            if len(df_i) == 1:
-                # Handle if only one track within group
-                self._playlist.df.loc[
-                    self._playlist.df["cluster_class_outer"] == i,
-                    "cluster_class_inner",
-                ] = [0]
-                continue
-
-            features_matrix = self._preprocess_features(df_i)
-            clustering = AgglomerativeClustering(
-                n_clusters=None,
-                distance_threshold=3,
-                linkage="complete",
-            )
-            labels = clustering.fit_predict(features_matrix)
-            self._playlist.df.loc[
-                self._playlist.df["cluster_class_outer"] == i,
-                "cluster_class_inner",
-            ] = labels
-
-        self._playlist.df = self._playlist.df.sort_values(
-            by=["cluster_class_outer", "cluster_class_inner"]
-        )
+        self._playlist.df = self._playlist.df.sort_values(by=["cluster_class_outer"])
 
     def suggest(self):
         raise NotImplementedError
 
 
 def simmer_playlist(
-    spotify: Spotify,
-    playlist_id: str,
-    evaluator: Type[PlaylistEvaluator],
+    p: Playlist,
+    evaluator: Type[PlaylistEvaluatorBase],
     to_spotify: Optional[bool] = False,
 ) -> list[Track]:
     """Reorder / add songs to playlist for simmering.
@@ -395,18 +430,17 @@ def simmer_playlist(
     :param playlist_id: ID of the playlist to simmer.
 
     """
-    p = Playlist(spotify, playlist_id)
     # p.corr_matrix()
     # p.plot(fmt_title="{name}: Original")
 
     e = evaluator(p)
     e.reorder()
 
-    # p.plot(
-    #     fmt_title="{{name}}: Reordered by {feature}".format(
-    #         feature=evaluator.__name__,
-    #     )
-    # )
+    p.plot(
+        fmt_title="{{name}}: Reordered by {feature}".format(
+            feature=evaluator.__name__,
+        )
+    )
     print(p.df)
 
     # Propogate local changes back to spotify playlist
@@ -417,7 +451,7 @@ def simmer_playlist(
     # p.reorder_by_feature(reorder_feature)
     # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
 
-    # plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -430,7 +464,7 @@ if __name__ == "__main__":
 
     CLIENT_ID = os.getenv("CLIENT_ID")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-    REDIRECT_URI = "http://127.0.0.1:5000/login_callback"
+    REDIRECT_URI = "http://127.0.0.1:5000/api/login_callback"
     OAUTH_SCOPES = [
         "playlist-read-private",
         "playlist-read-collaborative",
@@ -459,10 +493,21 @@ if __name__ == "__main__":
         "kotlin": "5IrrDF6L9eiXjIAS6qTx5E",
         "mainstream": "0Or7sOLeS5ikhhOaWWRyzC",
         "girls party!": "2ZleY8ep3CsifUlv8rECfG",
+        "4 cat copy": "3r4jK8owZWGUe8ET3YqPFG",
     }
+
+    cache_path = Path("./playlist.pickle")
+    p = Playlist(spotify, playlists["mainstream"])
+    # if cache_path.is_file():
+    #     with open(cache_path, "rb") as f:
+    #         p = pickle.load(f)
+    # else:
+    #     p = Playlist(spotify, playlists["girls party!"])
+    #     with open(cache_path, "wb") as f:
+    #         pickle.dump(p, f)
+
     simmer_playlist(
-        spotify,
-        playlists["girls party!"],
+        p,
         ClusteringEvaluator,
-        to_spotify=True,
+        to_spotify=False,
     )
