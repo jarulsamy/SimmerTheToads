@@ -1,6 +1,7 @@
 .TabList {
     background-color: #F1DAC4;
     min-height: 60px;
+    list-style: none;
 }
 
 .Tab {

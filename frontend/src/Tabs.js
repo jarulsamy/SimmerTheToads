@@ -3,7 +3,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import About from "./About";
 import SongForm from "./song_form";
 import Flask from "./Flask";
-import "./Tabs.css";
+import "./css/Tabs.css";
 
 function CreateTabs() {
     return (
