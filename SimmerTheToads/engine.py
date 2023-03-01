@@ -13,7 +13,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import LabelEncoder, RobustScaler, StandardScaler
+from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, RobustScaler,
+                                   StandardScaler)
 from spotipy.client import Spotify
 
 pd.set_option("display.max_columns", None)
@@ -78,6 +79,7 @@ class Track:
 
         for i in self.analysis_df_names:
             self._analysis[i] = pd.DataFrame(analysis[i])
+            self._analysis[i] = self._analysis[i].query("confidence > 0.7")
 
     def plot(self):
         """Show plots based on Spotify's own analysis."""
@@ -138,6 +140,14 @@ class Track:
         return self._analysis
 
     @property
+    def num_bars(self):
+        return len(self.analysis["bars"])
+
+    @property
+    def num_beats(self):
+        return len(self.analysis["beats"])
+
+    @property
     def num_sections(self):
         return len(self.analysis["sections"])
 
@@ -145,7 +155,11 @@ class Track:
     def num_segments(self):
         return len(self.analysis["segments"])
 
-    def get_analysis_features(self, num_sections):
+    @property
+    def num_tatums(self):
+        return len(self.analysis["tatums"])
+
+    def get_analysis_features(self, num_bars, num_beats, num_sections, num_tatums):
         base_features = self.features
         analysis = self.analysis
 
@@ -155,7 +169,7 @@ class Track:
         except KeyError:
             base_features["artist"] = None
 
-        rel_columns = [
+        rel_section_columns = [
             "start",
             "loudness",
             "tempo",
@@ -166,11 +180,27 @@ class Track:
 
         # Mean of groups of sections
         sections = analysis["sections"]
-        sections = sections[rel_columns]
+        sections = sections[rel_section_columns]
         sections = np.array_split(sections, num_sections)
         for i, v in enumerate(sections):
             for column in v.columns:
                 base_features[f"section_{column}_{i}"] = v[column].mean()
+
+        types = {
+            "bars": num_bars,
+            "beats": num_beats,
+            "tatums": num_tatums,
+        }
+        for k, v in types.items():
+            if v == 0:
+                # Skip empty fields
+                continue
+            data = analysis[k]
+            data = data[["start"]]
+            splits = np.array_split(data, v)
+            for i, split in enumerate(splits):
+                for column in split.columns:
+                    base_features[f"{k}_{column}_{i}"] = split[column].mean()
 
         return base_features
 
@@ -235,9 +265,20 @@ class Playlist:
             delayed(Track)(self._spotify, m["track"], f)
             for m, f in zip(track_items, features)
         )
-        min_sections = min(results, key=lambda x: x.num_sections).num_sections
 
-        rows = [i.get_analysis_features(min_sections) for i in results]
+        analysis_params = {
+            "num_bars": 0,
+            "num_beats": 0,
+            "num_sections": 0,
+            "num_tatums": 0,
+        }
+        for i in analysis_params.keys():
+            analysis_params[i] = getattr(
+                min(results, key=lambda x: getattr(x, i)),
+                i,
+            )
+
+        rows = [i.get_analysis_features(**analysis_params) for i in results]
         self.df = pd.DataFrame(rows)
         self.df = self.df.drop(
             labels=["type", "analysis_url"],
@@ -377,7 +418,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         # Assume all numeric features are valid input features
         numeric_df = df.select_dtypes(include=[np.number])
         arr = numeric_df.to_numpy()
-        scaler = StandardScaler()
+        scaler = MinMaxScaler()
         scaled = scaler.fit_transform(RobustScaler().fit_transform(arr))
 
         # Add artists column, exclude this from scaling
@@ -397,18 +438,16 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
 
         print(features_matrix)
 
-        # Get some initial distances to help guide our search
         clustering = AgglomerativeClustering(
             n_clusters=None,
-            distance_threshold=12,
+            distance_threshold=3,
         )
         labels = clustering.fit_predict(features_matrix)
-
         self._playlist.df["cluster_class_outer"] = labels
-
         self._playlist.df = self._playlist.df.sort_values(by=["cluster_class_outer"])
 
     def suggest(self):
+        """Suggest songs to add in the playlist."""
         raise NotImplementedError
 
 
@@ -441,7 +480,7 @@ def simmer_playlist(
     #         feature=evaluator.__name__,
     #     )
     # )
-    print(p.df)
+    print(p.df[["track", "cluster_class_outer"]])
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
@@ -497,7 +536,7 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["4 cat copy"])
+    p = Playlist(spotify, playlists["mainstream"])
     # if cache_path.is_file():
     #     with open(cache_path, "rb") as f:
     #         p = pickle.load(f)
