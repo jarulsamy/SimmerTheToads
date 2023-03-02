@@ -1,6 +1,5 @@
 """Primary playlist manipulation module."""
 import os
-import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Type
@@ -14,10 +13,9 @@ import seaborn as sns
 from joblib import Parallel, delayed
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, RobustScaler,
-                                   StandardScaler)
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, RobustScaler
 from spotipy.client import Spotify
 
 pd.set_option("display.max_columns", None)
@@ -463,6 +461,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         clustering = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=3,
+            linkage="ward",
         )
         labels = clustering.fit_predict(feature_matrix)
         self._playlist.df["cluster_class_outer"] = labels
@@ -471,12 +470,23 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         )
 
     def _subcluster_opt(self):
+        self._playlist.df["cluster_class_inner"] = 0
         for cluster in self._playlist.df["cluster_class_outer"].unique():
             df = self._playlist.df.query("cluster_class_outer == @cluster")
+            if len(df) <= 1:
+                # Can't optimize a single song cluster
+                continue
+
             # Compute euclidean distance of all the features within the matrix
             # TODO: Artist will definitely be wrong during this calculation...
             feature_matrix = df.select_dtypes(include=[np.number])
-            features_matrix = features_matrix.to_numpy()
+            feature_matrix = feature_matrix.drop(
+                labels=["cluster_class_outer", "cluster_class_inner"],
+                axis=1,
+                errors="ignore",
+            )
+            print(feature_matrix)
+            feature_matrix = feature_matrix.to_numpy()
             distance_matrix = scipy.spatial.distance_matrix(
                 feature_matrix, feature_matrix
             )
@@ -484,6 +494,14 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
             # Convert to int for some possible speedup. These numbers are always
             # very large, so any rounding error is basically irrelevant.
             distance_matrix = distance_matrix.astype(int)
+
+            if np.sum(distance_matrix) == 0:
+                # Cluster of all the same songs, give them all the same inner class
+                self._playlist.df.loc[
+                    self._playlist.df.eval("cluster_class_outer == @cluster"),
+                    "cluster_class_inner",
+                ] = 0
+                continue
 
             G = nx.from_numpy_array(distance_matrix)
             tsp = nx.approximation.traveling_salesman_problem
@@ -494,13 +512,61 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
                 "cluster_class_inner",
             ] = path
 
-        print(self._playlist.df)
-        exit()
+        self._playlist.df["cluster_class_inner"] = self._playlist.df[
+            "cluster_class_inner"
+        ].astype(int)
+        self._playlist.df = self._playlist.df.sort_values(
+            by=["cluster_class_outer", "cluster_class_inner"]
+        )
+
+    def _order_clusters(self):
+        """Reorder the clusters to minimize TSP across them."""
+        clusters = self._playlist.df["cluster_class_outer"].unique()
+        n_clusters = len(clusters)
+        distance_matrix = np.zeros((n_clusters, n_clusters))
+        df = self._playlist.df.select_dtypes(include=[np.number])
+        for i, src in enumerate(clusters):
+            src_df = df.query("cluster_class_outer == @src")
+            src_df = src_df.set_index("cluster_class_inner")
+            # Last node from every cluster connects to first node within every
+            # other node.
+            src_node = src_df.iloc[-1]
+            src_node = src_node.drop(
+                labels=["cluster_class_outer", "cluster_class_inner"],
+                errors="ignore",
+            )
+            src_node = np.atleast_2d(src_node.to_numpy())
+            for j, dst in enumerate(clusters):
+                dst_df = df.query("cluster_class_outer == @dst")
+                dst_df = dst_df.set_index("cluster_class_inner")
+                dst_node = dst_df.iloc[0]
+                dst_node = dst_node.drop(
+                    labels=["cluster_class_outer", "cluster_class_inner"],
+                    errors="ignore",
+                )
+                dst_node = np.atleast_2d(dst_node.to_numpy())
+                distance = scipy.spatial.distance.cdist(src_node, dst_node)
+                distance_matrix[i, j] = distance
+
+        G = nx.from_numpy_array(distance_matrix)
+        tsp = nx.approximation.traveling_salesman_problem
+        path = tsp(G, cycle=False)
+        _, path = np.unique(path, return_index=True)
+
+        # Generate the new resulting dataframe
+        result = pd.DataFrame()
+        for i in path:
+            result = pd.concat(
+                [result, self._playlist.df.query("cluster_class_outer == @i")]
+            )
+
+        self._playlist.df = result
 
     def reorder(self):
         """Reorder playlist combining several techniques."""
         self._cluster()
-        # self._subcluster_opt()
+        self._subcluster_opt()
+        self._order_clusters()
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
@@ -536,7 +602,7 @@ def simmer_playlist(
     #         feature=evaluator.__name__,
     #     )
     # )
-    print(p.df[["track", "cluster_class_outer"]])
+    print(p.df[["track", "cluster_class_outer", "cluster_class_inner"]])
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
@@ -593,14 +659,7 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["kotlin"])
-    # if cache_path.is_file():
-    #     with open(cache_path, "rb") as f:
-    #         p = pickle.load(f)
-    # else:
-    #     p = Playlist(spotify, playlists["girls party!"])
-    #     with open(cache_path, "wb") as f:
-    #         pickle.dump(p, f)
+    p = Playlist(spotify, playlists["girls party!"])
 
     simmer_playlist(
         p,
