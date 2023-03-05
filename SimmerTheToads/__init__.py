@@ -48,4 +48,4 @@ CORS(api_bp, **cors_args)
 
 app.register_blueprint(api_bp, url_prefix="/api")
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
