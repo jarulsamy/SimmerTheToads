@@ -82,7 +82,7 @@ class Track:
 
         # TODO: This is somewhat slow since there are so many API calls.
         #       Maybe do this lazily/async?
-        analysis = spotify.audio_analysis(self.id)
+        analysis = self._spotify.audio_analysis(self.id)
 
         # Remove unused track attributes
         for i in track_remove_keys:
@@ -507,7 +507,6 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
                 axis=1,
                 errors="ignore",
             )
-            print(feature_matrix)
             feature_matrix = feature_matrix.to_numpy()
             distance_matrix = scipy.spatial.distance_matrix(
                 feature_matrix, feature_matrix
@@ -580,6 +579,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         _, path = np.unique(path, return_index=True)
 
         # Generate the new resulting dataframe
+        # TODO: There may be a more performant way to do this.
         result = pd.DataFrame()
         for i in path:
             result = pd.concat(
@@ -676,5 +676,5 @@ if __name__ == "__main__":
     simmer_playlist(
         p,
         ClusteringEvaluator,
-        to_spotify=True,
+        to_spotify=False,
     )
