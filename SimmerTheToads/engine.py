@@ -458,12 +458,16 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
     def _cluster(self):
         """Reorder playlist using agglomerative clustering."""
         feature_matrix = self._preprocess_features()
-        clustering = AgglomerativeClustering(
-            n_clusters=None,
-            distance_threshold=3,
-            linkage="ward",
-        )
-        labels = clustering.fit_predict(feature_matrix)
+        if len(feature_matrix) <= 1:
+            labels = list(range(len(feature_matrix)))
+        else:
+            clustering = AgglomerativeClustering(
+                n_clusters=None,
+                distance_threshold=3,
+                linkage="ward",
+            )
+            labels = clustering.fit_predict(feature_matrix)
+
         self._playlist.df["cluster_class_outer"] = labels
         self._playlist.df = self._playlist.df.sort_values(
             by=["cluster_class_outer"],
@@ -523,7 +527,11 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         """Reorder the clusters to minimize TSP across them."""
         clusters = self._playlist.df["cluster_class_outer"].unique()
         n_clusters = len(clusters)
+        if n_clusters <= 1:
+            return
+
         distance_matrix = np.zeros((n_clusters, n_clusters))
+
         df = self._playlist.df.select_dtypes(include=[np.number])
         for i, src in enumerate(clusters):
             src_df = df.query("cluster_class_outer == @src")
