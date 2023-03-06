@@ -2,7 +2,8 @@ from copy import deepcopy
 
 import pytest
 
-from SimmerTheToads.engine import Playlist, grouper
+from SimmerTheToads.engine import (ClusteringEvaluator, Playlist, grouper,
+                                   simmer_playlist)
 
 AUDIO_ANALYSIS = {
     "meta": {
@@ -347,10 +348,6 @@ track = TRACKS["items"][0]
 for i in range(25):
     TRACKS["items"].append(track)
 
-from pprint import pprint
-
-pprint(TRACKS)
-
 
 class SpotifyMock:
     """Mock the necessary portions of the Spotify WebAPI."""
@@ -373,12 +370,6 @@ class SpotifyMock:
         my_resp = deepcopy(TRACKS)
         my_resp["items"] = tracks
         return my_resp
-
-        # items = self._playlist["tracks"]["items"][: self.n_tracks]
-        # my_tracks = deepcopy(self._playlist)
-        # my_tracks["tracks"]["items"] = items
-
-        # return my_tracks
 
     def playlist_replace_items(self):
         raise NotImplementedError
@@ -423,3 +414,9 @@ def test_construct_empty_playlist_raises():
 def test_construct_playlist_with_single_track():
     spotify = SpotifyMock(PLAYLIST, n_tracks=1)
     Playlist(spotify, "some mock id")
+
+
+def test_simmer_playlist_clustering_single_track():
+    spotify = SpotifyMock(PLAYLIST, n_tracks=1)
+    p = Playlist(spotify, "some mock id")
+    simmer_playlist(p, ClusteringEvaluator, to_spotify=False)
