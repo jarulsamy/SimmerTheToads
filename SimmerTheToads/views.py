@@ -6,6 +6,8 @@ import spotipy
 from flask import Blueprint, jsonify, redirect, request, session
 from spotipy.oauth2 import SpotifyOAuth
 
+from .engine import ClusteringEvaluator, Playlist, batched, simmer_playlist
+
 # Retrieve these values from the spotify developer dashboard:
 #   https://developer.spotify.com/dashboard/applications
 #
@@ -71,9 +73,12 @@ def index():
     return jsonify({"message": "Hello from Flask!"})
 
 
-@api_bp.route("/login", methods=["POST"])
+@api_bp.route("/login", methods=["GET", "POST"])
 def login():
     """Login to spotify's API using OAuth2.
+
+    Query whether logged in with GET.
+    Login with POST.
 
     More documentation available here:
         * https://developer.spotify.com/documentation/general/guides/authorization/code-flow/
@@ -88,17 +93,23 @@ def login():
         redirect_uri=REDIRECT_URI,
         show_dialog=True,
     )
+    logged_in = (
+        auth_manager.validate_token(cache_handler.get_cached_token()) is not None
+    )
 
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        # Step 1: Redirect to spotify OAuth when not logged in.
-        auth_url = auth_manager.get_authorize_url()
-        return jsonify({"auth_url": auth_url})
+    if request.method == "GET":
+        return jsonify({"logged_in": logged_in})
+    elif request.method == "POST":
+        if not logged_in:
+            # Step 1: Redirect to spotify OAuth when not logged in.
+            auth_url = auth_manager.get_authorize_url()
+            return jsonify({"auth_url": auth_url})
 
     # TODO: Handle closing the Oauth window if the user is already logged in.
     return jsonify(success=True)
 
 
-@api_bp.route("/login_callback")
+@api_bp.get("/login_callback")
 def login_callback():
     """Endpoint to receive token from Spotify's redirect."""
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -129,20 +140,86 @@ def logout():
 @api_bp.route("/playlists")
 @logged_in
 def playlists(spotify):
-    """Get all the playlists of the current user.
-
-    :param spotify: Current spotify OAuth session
-    """
+    """Get all the playlists of the current user."""
     return jsonify(spotify.current_user_playlists())
 
 
-@api_bp.route("/get_test")
-def get_test():
-    """Demo get endpoint."""
-    return jsonify({"key": "value", "ui": "perfect", "pages": 3})
+@api_bp.get("/playlist_id")
+@logged_in
+def get_playlist_id(spotify):
+    """Get the current playlist ID for this user."""
+    return jsonify(playlist_id=session.get("playlist_id"))
 
 
-@api_bp.route("/playlist", methods=["GET"])
-def playlist():
-    """Demo playlist post endpoint."""
+@api_bp.put("/playlist_id")
+@logged_in
+def put_playlist_id(spotify):
+    """TODO."""
+    # Validate the playlist ID
+    id = request.args["playlist_id"]
+    try:
+        spotify.playlist(id)
+    except spotipy.SpotifyException as e:
+        return jsonify(error=str(e)), 400
+
+    session["playlist_id"] = id
     return jsonify(success=True)
+
+
+@api_bp.get("/playlist_tracks")
+@logged_in
+def get_playlist_tracks(spotify):
+    """Get all the tracks of the currently selected playlist."""
+    # Validate the playlist ID
+    id = session.get("playlist_id")
+    if id is None:
+        return jsonify(error="Playlist ID is unset"), 400
+
+    track_items = []
+    result = spotify.user_playlist_tracks(playlist_id=id)
+    track_items.extend(result["items"])
+    while result["next"]:
+        result = spotify.next(result)
+        track_items.extend(result["items"])
+
+    # Remove redundant information from responses
+    track_items = [i["track"] for i in track_items]
+
+    for i in track_items:
+        del i["available_markets"]
+        del i["album"]["available_markets"]
+
+    return jsonify(track_items)
+
+
+def ids_to_tracks(spotify, ids):
+    """Convert a list of IDs to spotify track metadata."""
+    result = []
+    for batch in batched(ids, 50):
+        result.extend(spotify.tracks(list(batch))["tracks"])
+
+    for i, v in enumerate(result):
+        del v["available_markets"]
+        del v["album"]["available_markets"]
+        v["index"] = i
+
+    return result
+
+
+@api_bp.get("/simmered_playlist")
+@logged_in
+def simmered_playlist(spotify):
+    """Reorder a playlist and return the metadata."""
+    # Validate the playlist ID
+    id = session.get("playlist_id")
+    if id is None:
+        return jsonify(error="Playlist ID is unset"), 400
+
+    # TODO: Paralell fetching doesn't currently work, child threads cannot use
+    # the request context used by the token session management of Spotipy.
+    # As a result, this is kinda slow...
+    p = Playlist(spotify, id, parallel_fetch=False)
+    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=False)
+    new_track_ids = [i.id for i in tracks]
+
+    return jsonify(ids_to_tracks(spotify, new_track_ids))

@@ -25,6 +25,7 @@ app = Flask(
     template_folder=template_dir,
     static_folder=static_dir,
 )
+# TODO: Audit this for security sake
 app.config["SECRET_KEY"] = os.urandom(64)
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = "./.flask_session"
