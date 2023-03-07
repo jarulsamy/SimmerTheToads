@@ -1,4 +1,5 @@
 """Primary playlist manipulation module."""
+import itertools
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -32,6 +33,15 @@ def grouper(iterable, n):
     """
     args = [iter(iterable)] * n
     return zip(*args)
+
+
+def batched(iterable, n):
+    """Batch data into tuples of length n. The last batch may be shorter."""
+    if n < 1:
+        raise ValueError("n must be at least one")
+    it = iter(iterable)
+    while batch := tuple(itertools.islice(it, n)):
+        yield batch
 
 
 class Track:
@@ -249,7 +259,7 @@ class Playlist:
         "track",
     ]
 
-    def __init__(self, spotify: Spotify, id: str):
+    def __init__(self, spotify: Spotify, id: str, parallel_fetch=True):
         self.id = id
         self._spotify = spotify
         self.metadata = self._spotify.playlist(id)
@@ -268,13 +278,21 @@ class Playlist:
         # Get all the features of each track within the playlist.
         # Do this outside of the Track class to leverage the batched API.
         features = []
-        for chunk in grouper(track_ids, min(len(track_ids), 100)):
+        for chunk in batched(track_ids, min(len(track_ids), 100)):
             features.extend(self._spotify.audio_features(list(chunk)))
 
-        results = Parallel(n_jobs=os.cpu_count(), prefer="threads")(
-            delayed(Track)(self._spotify, m["track"], f)
-            for m, f in zip(track_items, features)
-        )
+        if parallel_fetch:
+            results = Parallel(n_jobs=os.cpu_count(), prefer="threads")(
+                delayed(Track)(self._spotify, m["track"], f)
+                for m, f in zip(track_items, features)
+            )
+        else:
+            results = [
+                Track(self._spotify, m["track"], f)
+                for m, f in zip(track_items, features)
+            ]
+        if not results:
+            raise ValueError("Cannot construt empty playlist")
 
         analysis_params = {
             "num_bars": 0,
@@ -458,12 +476,16 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
     def _cluster(self):
         """Reorder playlist using agglomerative clustering."""
         feature_matrix = self._preprocess_features()
-        clustering = AgglomerativeClustering(
-            n_clusters=None,
-            distance_threshold=3,
-            linkage="ward",
-        )
-        labels = clustering.fit_predict(feature_matrix)
+        if len(feature_matrix) <= 1:
+            labels = list(range(len(feature_matrix)))
+        else:
+            clustering = AgglomerativeClustering(
+                n_clusters=None,
+                distance_threshold=3,
+                linkage="ward",
+            )
+            labels = clustering.fit_predict(feature_matrix)
+
         self._playlist.df["cluster_class_outer"] = labels
         self._playlist.df = self._playlist.df.sort_values(
             by=["cluster_class_outer"],
@@ -523,7 +545,11 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         """Reorder the clusters to minimize TSP across them."""
         clusters = self._playlist.df["cluster_class_outer"].unique()
         n_clusters = len(clusters)
+        if n_clusters <= 1:
+            return
+
         distance_matrix = np.zeros((n_clusters, n_clusters))
+
         df = self._playlist.df.select_dtypes(include=[np.number])
         for i, src in enumerate(clusters):
             src_df = df.query("cluster_class_outer == @src")
@@ -582,37 +608,23 @@ def simmer_playlist(
 
     This is the main entrypoint to the playlist processing engine. It queries a
     playlist for all the required information about a playlist, then reorders
-    the playlist. This aims to be an abstraction to avoid requiring the Spotify
-    API to be passed deep into the engine.
+    the playlist based on the evaluation of 'evaluator'.
 
-    TODO: Reword this with new 'Evaluator' model.
-
-    :param spotify: Current spotify OAuth session
-    :param playlist_id: ID of the playlist to simmer.
-
+    :param p: Playlist to be reordered.
+    :param evaluator: Engine to use for the evaluation.
+    :param to_spotify: Whether to write the modified playlist back to spotify.
     """
-    # p.corr_matrix()
-    # p.plot(fmt_title="{name}: Original")
-
     e = evaluator(p)
     e.reorder()
+    # e.suggest()
 
-    # p.plot(
-    #     fmt_title="{{name}}: Reordered by {feature}".format(
-    #         feature=evaluator.__name__,
-    #     )
-    # )
     print(p.df[["track", "cluster_class_outer", "cluster_class_inner"]])
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
         p.to_spotify()
 
-    # reorder_feature = "liveness"
-    # p.reorder_by_feature(reorder_feature)
-    # p.plot(fmt_title="{{name}}: Reordered by {feature}".format(feature=reorder_feature))
-
-    plt.show()
+    return list(p.df["track"])
 
 
 if __name__ == "__main__":
