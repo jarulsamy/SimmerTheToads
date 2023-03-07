@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 
 from flask import Flask
@@ -26,7 +27,7 @@ app = Flask(
     static_folder=static_dir,
 )
 # TODO: Audit this for security sake
-app.config["SECRET_KEY"] = os.urandom(64)
+app.config["SECRET_KEY"] = secrets.token_hex()
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = "./.flask_session"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
