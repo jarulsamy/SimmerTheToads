@@ -225,8 +225,8 @@ class Track:
 
     def __repr__(self) -> str:
         """Represent a track as 'name', 'artist'."""
-        name = self.metadata["name"][:16]
-        artist = self.metadata["artists"][0]["name"][:16]
+        name = self.metadata["name"]
+        artist = self.metadata["artists"][0]["name"]
         return f"{name}, {artist}"
 
 
@@ -576,7 +576,9 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         G = nx.from_numpy_array(distance_matrix)
         tsp = nx.approximation.traveling_salesman_problem
         path = tsp(G, cycle=False)
-        _, path = np.unique(path, return_index=True)
+        # Ensure the path contains no duplicates, but also preserve the order.
+        # TODO: This could indicate a TSP bug...
+        path = list(dict.fromkeys(path))
 
         # Generate the new resulting dataframe
         # TODO: There may be a more performant way to do this.
@@ -668,13 +670,14 @@ if __name__ == "__main__":
         "girls party!": "2ZleY8ep3CsifUlv8rECfG",
         "4 cat copy": "3r4jK8owZWGUe8ET3YqPFG",
         "4 songs": "4C9aR5IxztGLZNWQrdO8Y1",
+        "Bring it on back": "6HBoSjDYkQ5EKufcCbGja1",
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["girls party!"])
+    p = Playlist(spotify, playlists["Bring it on back"])
 
     simmer_playlist(
         p,
         ClusteringEvaluator,
-        to_spotify=False,
+        to_spotify=True,
     )
