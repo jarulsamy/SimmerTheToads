@@ -141,7 +141,13 @@ def logout():
 @logged_in
 def playlists(spotify):
     """Get all the playlists of the current user."""
-    return jsonify(spotify.current_user_playlists())
+    playlists = spotify.current_user_playlists()
+    my_id = spotify.me().get("id")
+
+    # Filter to only those that the user owns
+    playlists["items"] = [i for i in playlists["items"] if i["owner"]["id"] == my_id]
+
+    return jsonify(playlists)
 
 
 @api_bp.get("/playlist/<id>/tracks")
@@ -187,8 +193,9 @@ def get_simmered_playlist(spotify, id):
     # TODO: Paralell fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
+    to_spotify = request.args.get("to_spotify", False)
     p = Playlist(spotify, id, parallel_fetch=False)
-    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=False)
+    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=to_spotify)
     new_track_ids = [i.id for i in tracks]
 
     return jsonify(ids_to_tracks(spotify, new_track_ids))
