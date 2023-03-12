@@ -144,37 +144,11 @@ def playlists(spotify):
     return jsonify(spotify.current_user_playlists())
 
 
-@api_bp.get("/playlist_id")
+@api_bp.get("/playlist/<id>/tracks")
 @logged_in
-def get_playlist_id(spotify):
-    """Get the current playlist ID for this user."""
-    return jsonify(playlist_id=session.get("playlist_id"))
-
-
-@api_bp.put("/playlist_id")
-@logged_in
-def put_playlist_id(spotify):
-    """Set the ID of the currently selected playlist in the session."""
-    # Validate the playlist ID
-    try:
-        id = request.json["playlist_id"]
-        spotify.playlist(id)
-    except (spotipy.SpotifyException, KeyError) as e:
-        return jsonify(error=str(e)), 400
-
-    session["playlist_id"] = id
-    return jsonify(success=True)
-
-
-@api_bp.get("/playlist_tracks")
-@logged_in
-def get_playlist_tracks(spotify):
+def get_playlist_tracks(spotify, id):
     """Get all the tracks of the currently selected playlist."""
     # Validate the playlist ID
-    id = session.get("playlist_id")
-    if id is None:
-        return jsonify(error="Playlist ID is unset"), 400
-
     track_items = []
     result = spotify.user_playlist_tracks(playlist_id=id)
     track_items.extend(result["items"])
@@ -206,15 +180,10 @@ def ids_to_tracks(spotify, ids):
     return result
 
 
-@api_bp.get("/simmered_playlist")
+@api_bp.get("/simmered_playlist/<id>/tracks")
 @logged_in
-def simmered_playlist(spotify):
+def get_simmered_playlist(spotify, id):
     """Reorder a playlist and return the metadata."""
-    # Validate the playlist ID
-    id = session.get("playlist_id")
-    if id is None:
-        return jsonify(error="Playlist ID is unset"), 400
-
     # TODO: Paralell fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
