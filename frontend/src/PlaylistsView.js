@@ -1,17 +1,6 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Collapse from "@mui/material/Collapse";
-import IconButton from "@mui/material/IconButton";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -19,34 +8,58 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
-import { Grid } from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  CardActionArea,
+  Grid,
+  Snackbar,
+} from "@mui/material";
 
-function PlaylistCard({ id, name, description, images }) {
+function PlaylistCard({ id, name, description, images, songs = [] }) {
   const image = images[0] || { url: "", height: 300, width: 300 };
+  const [simmeredAlert, setSimmeredAlert] = React.useState(null);
+
+  async function simmerPlaylist(playlist_id) {
+    const resp = await APIService.simmeredPlaylistTracks(playlist_id, true);
+    console.log(`Simmered: ${playlist_id}`);
+    // console.log(resp);
+    // setSimmeredAlert(
+    //   <Alert severity="success">
+    //     <AlertTitle>Success</AlertTitle>"Successfully simmered!"
+    //   </Alert>
+    // );
+  }
+
   return (
     <Card sx={{ width: 300 }} variant="outlined">
-      <CardMedia
-        sx={{ height: 300 }}
-        component="img"
-        image={image.url}
-        title={name}
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          {name}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {description}
-        </Typography>
-      </CardContent>
+      <CardActionArea onClick={() => console.log("TODO: Show a dialog here!")}>
+        <CardMedia
+          sx={{ height: 300 }}
+          component="img"
+          image={image.url}
+          title={name}
+        />
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="div">
+            {name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {description}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
       <CardActions>
-        <Button size="small">TODO</Button>
+        <Button size="small" onClick={() => simmerPlaylist(id)}>
+          Simmer
+          {simmeredAlert}
+        </Button>
       </CardActions>
     </Card>
   );
 }
 
-class PlaylistTable extends React.Component {
+class PlaylistCards extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -66,7 +79,7 @@ class PlaylistTable extends React.Component {
         <Grid container spacing={4} justifyContent="center">
           {this.state.playlists.map((p) => {
             return (
-              <Grid item>
+              <Grid item key={p.id}>
                 <Paper elevation={3}>
                   <PlaylistCard
                     id={p.id}
@@ -84,4 +97,4 @@ class PlaylistTable extends React.Component {
   }
 }
 
-export default PlaylistTable;
+export default PlaylistCards;

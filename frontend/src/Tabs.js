@@ -6,7 +6,7 @@ import SongForm from "./song_form";
 import Flask from "./Flask";
 import "./css/Tabs.css";
 import APIService from "./API_service";
-import PlaylistTable from "./PlaylistsView";
+import PlaylistCards from "./PlaylistsView";
 
 function CreateTabs() {
   return (
@@ -29,7 +29,7 @@ function CreateTabs() {
         <About />
       </TabPanel>
       <TabPanel className={"TabPanel"}>
-        <PlaylistTable />
+        <PlaylistCards />
       </TabPanel>
     </Tabs>
   );
