@@ -201,7 +201,7 @@ def get_simmered_playlist(spotify, id):
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
     to_spotify = request.args.get("to_spotify", False)
-    p = Playlist(spotify, id, parallel_fetch=True)
+    p = Playlist(spotify, id, parallel_fetch=False)
 
     # TODO: Remove me, purely a debug step to save playlists.
     if __debug__:
