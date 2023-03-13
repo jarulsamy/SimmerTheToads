@@ -1,6 +1,7 @@
 """Contains all the 'views' that the flask application itself uses."""
 import functools
 import os
+from pathlib import Path
 
 import spotipy
 from flask import Blueprint, jsonify, redirect, request, session
@@ -27,6 +28,10 @@ OAUTH_SCOPES = [
 
 # Setup the API blueprints
 api_bp = Blueprint("api_bp", __name__)
+
+# Setup some debug facilities
+DEBUG_DUMP_DIR = Path("./.debug")
+DEBUG_DUMP_DIR.mkdir(exist_ok=True)
 
 
 def logged_in(func):
@@ -145,7 +150,9 @@ def playlists(spotify):
     my_id = spotify.me().get("id")
 
     # Filter to only those that the user owns
-    playlists["items"] = [i for i in playlists["items"] if i["owner"]["id"] == my_id]
+    items = playlists["items"]
+    items = [i for i in items if i["owner"]["id"] == my_id]
+    playlists["items"] = items
 
     return jsonify(playlists)
 
@@ -190,11 +197,21 @@ def ids_to_tracks(spotify, ids):
 @logged_in
 def get_simmered_playlist(spotify, id):
     """Reorder a playlist and return the metadata."""
-    # TODO: Paralell fetching doesn't currently work, child threads cannot use
+    # TODO: Parallel fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
     to_spotify = request.args.get("to_spotify", False)
-    p = Playlist(spotify, id, parallel_fetch=False)
+    p = Playlist(spotify, id, parallel_fetch=True)
+
+    # TODO: Remove me, purely a debug step to save playlists.
+    if __debug__:
+        n = 0
+        debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
+        while debug_save_path.exists():
+            debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
+            n += 1
+        p.to_disk(debug_save_path)
+
     tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=to_spotify)
     new_track_ids = [i.id for i in tracks]
 
