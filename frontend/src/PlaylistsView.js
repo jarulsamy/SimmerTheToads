@@ -8,27 +8,29 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
-import {
-  Alert,
-  AlertTitle,
-  CardActionArea,
-  Grid,
-  Snackbar,
-} from "@mui/material";
+import { CardActionArea, Grid } from "@mui/material";
+import { useAlert } from "./Alert";
 
 function PlaylistCard({ id, name, description, images, songs = [] }) {
   const image = images[0] || { url: "", height: 300, width: 300 };
-  const [simmeredAlert, setSimmeredAlert] = React.useState(null);
+  const { setAlert } = useAlert();
+  const [simmerQueued, setSimmerQueued] = React.useState(false);
 
-  async function simmerPlaylist(playlist_id) {
-    const resp = await APIService.simmeredPlaylistTracks(playlist_id, true);
-    console.log(`Simmered: ${playlist_id}`);
-    // console.log(resp);
-    // setSimmeredAlert(
-    //   <Alert severity="success">
-    //     <AlertTitle>Success</AlertTitle>"Successfully simmered!"
-    //   </Alert>
-    // );
+  async function simmerPlaylist(playlist_id, playlist_name) {
+    setSimmerQueued(true);
+    setAlert("info", `Started simmering ${playlist_name}. Please wait...`);
+    APIService.simmeredPlaylistTracks(playlist_id, true).then(
+      (resp) => {
+        console.log(`Simmered: ${playlist_id}`);
+        setAlert("success", `Successfully simmered: ${playlist_name}`);
+        setSimmerQueued(false);
+      },
+      (error) => {
+        console.log(error);
+        setAlert("error", "Something went wrong. Please try again.");
+        setSimmerQueued(false);
+      }
+    );
   }
 
   return (
@@ -50,10 +52,13 @@ function PlaylistCard({ id, name, description, images, songs = [] }) {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button size="small" onClick={() => simmerPlaylist(id)}>
-          Simmer
-          {simmeredAlert}
-        </Button>
+        {!simmerQueued ? (
+          <Button size="small" onClick={() => simmerPlaylist(id, name)}>
+            Simmer
+          </Button>
+        ) : (
+          <></>
+        )}
       </CardActions>
     </Card>
   );
