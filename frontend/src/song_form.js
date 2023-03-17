@@ -1,11 +1,9 @@
-// "use strict";
-
 import React from "react";
-// import ReactDOM from "react-dom/client";
 import APIService from './API_service.js';
+import "./css/SongForm.css";
+import SongList from "./SongList.js";
 
 
-const e = React.createElement;
 
 class SongForm extends React.Component {
   
@@ -15,7 +13,6 @@ class SongForm extends React.Component {
       song: '',
       songList: []
     };
-    this.songState = [""];
     this.handlers = {
       submit1: this.handle_submit_add_song,
       submit2: this.handle_submit_send_playlist,
@@ -30,7 +27,7 @@ class SongForm extends React.Component {
   
   handle_submit_send_playlist() {
     console.log("playlist to send: " + JSON.stringify(this.state["songList"]));
-    APIService.sendPlaylist(this.state["songList"]);
+    APIService.sendPlaylist(this.state.songList);
     // .then((response) => props.insertedArticle(response))
     // .catch(error => console.log('error',error))
   }
@@ -38,9 +35,9 @@ class SongForm extends React.Component {
   handle_submit_add_song(event) {
     try {
       // Song submitted
-      const aSong = this.state["song"];
+      const aSong = this.state.song;
       // Current song list
-      const songListTmp = this.state["songList"];
+      const songListTmp = this.state.songList;
       // Add new song
       songListTmp.push(aSong);
       this.setState({song: '', songList: songListTmp});
@@ -76,18 +73,15 @@ class SongForm extends React.Component {
 
   render() {
     return (
-      e( "div", null,
-        e(
-          "form", 
-          {id: "submit1", onSubmit: (e) => this.submit_handler(e, e.target.id)}, 
-          "Enter a song here: ",
-          e('input', {type:'text', value: this.state.song, onChange: this.handleChange}),
-          e('input', {type:'submit', value:'Submit'}),
-          e('h1',null,'You have submitted '+this.state["songList"].length+' songs:'),
-          e('ul',null,this.state["songList"].map((myList) => { return e('li',{key: myList},myList)}))
-        ),
-        e('button', {id: "submit2", type:'submit', onClick: (e) => this.submit_handler(e, e.target.id)}, "Make me a playlist!")
-      )
+      <div>
+        <form id="submit1" onSubmit={(e) => this.submit_handler(e, e.target.id)}>
+          Enter a song here: 
+          <input type="text" value={this.state.song} onChange={this.handleChange} />
+          <input type="submit" value="Submit" />
+          <SongList songList={this.state.songList} />
+        </form>
+        <button id="submit2" type="submit" onClick={(e) => this.submit_handler(e, e.target.id)}>Make me a playlist!</button>
+      </div>
     );
   }
   

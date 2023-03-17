@@ -1,9 +1,10 @@
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import About from "./About";
+import ExistingPlaylist from "./existing"
 import SongForm from "./song_form";
 import Flask from "./Flask";
-import "./Tabs.css";
+import "./css/Tabs.css";
 
 function CreateTabs() {
     return (
@@ -12,6 +13,7 @@ function CreateTabs() {
                     <Tab className={"Tab"}>Create Playlist</Tab>
                     <Tab className={"Tab"}>Spotify</Tab>
                     <Tab className={"Tab"}>About</Tab>
+                    <Tab className={"Tab"}>Simmer Existing Playlist</Tab>
                 </TabList>
 
 
@@ -24,6 +26,9 @@ function CreateTabs() {
             </TabPanel>
             <TabPanel className={"TabPanel"}>
                 <About />
+            </TabPanel>
+            <TabPanel className={"TabPanel"}>
+                <ExistingPlaylist />
             </TabPanel>
         </Tabs>
     );

@@ -154,12 +154,12 @@ def get_playlist_id(spotify):
 @api_bp.put("/playlist_id")
 @logged_in
 def put_playlist_id(spotify):
-    """TODO."""
+    """Set the ID of the currently selected playlist in the session."""
     # Validate the playlist ID
-    id = request.args["playlist_id"]
     try:
+        id = request.json["playlist_id"]
         spotify.playlist(id)
-    except spotipy.SpotifyException as e:
+    except (spotipy.SpotifyException, KeyError) as e:
         return jsonify(error=str(e)), 400
 
     session["playlist_id"] = id
