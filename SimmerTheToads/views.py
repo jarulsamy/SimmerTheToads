@@ -1,6 +1,7 @@
 """Contains all the 'views' that the flask application itself uses."""
 import functools
 import os
+from pathlib import Path
 
 import spotipy
 from flask import Blueprint, jsonify, redirect, request, session
@@ -27,6 +28,10 @@ OAUTH_SCOPES = [
 
 # Setup the API blueprints
 api_bp = Blueprint("api_bp", __name__)
+
+# Setup some debug facilities
+DEBUG_DUMP_DIR = Path("./.debug")
+DEBUG_DUMP_DIR.mkdir(exist_ok=True)
 
 
 def logged_in(func):
@@ -141,40 +146,22 @@ def logout():
 @logged_in
 def playlists(spotify):
     """Get all the playlists of the current user."""
-    return jsonify(spotify.current_user_playlists())
+    playlists = spotify.current_user_playlists()
+    my_id = spotify.me().get("id")
+
+    # Filter to only those that the user owns
+    items = playlists["items"]
+    items = [i for i in items if i["owner"]["id"] == my_id]
+    playlists["items"] = items
+
+    return jsonify(playlists)
 
 
-@api_bp.get("/playlist_id")
+@api_bp.get("/playlist/<id>/tracks")
 @logged_in
-def get_playlist_id(spotify):
-    """Get the current playlist ID for this user."""
-    return jsonify(playlist_id=session.get("playlist_id"))
-
-
-@api_bp.put("/playlist_id")
-@logged_in
-def put_playlist_id(spotify):
-    """Set the ID of the currently selected playlist in the session."""
-    # Validate the playlist ID
-    try:
-        id = request.json["playlist_id"]
-        spotify.playlist(id)
-    except (spotipy.SpotifyException, KeyError) as e:
-        return jsonify(error=str(e)), 400
-
-    session["playlist_id"] = id
-    return jsonify(success=True)
-
-
-@api_bp.get("/playlist_tracks")
-@logged_in
-def get_playlist_tracks(spotify):
+def get_playlist_tracks(spotify, id):
     """Get all the tracks of the currently selected playlist."""
     # Validate the playlist ID
-    id = session.get("playlist_id")
-    if id is None:
-        return jsonify(error="Playlist ID is unset"), 400
-
     track_items = []
     result = spotify.user_playlist_tracks(playlist_id=id)
     track_items.extend(result["items"])
@@ -206,20 +193,26 @@ def ids_to_tracks(spotify, ids):
     return result
 
 
-@api_bp.get("/simmered_playlist")
+@api_bp.get("/simmered_playlist/<id>/tracks")
 @logged_in
-def simmered_playlist(spotify):
+def get_simmered_playlist(spotify, id):
     """Reorder a playlist and return the metadata."""
-    # Validate the playlist ID
-    id = session.get("playlist_id")
-    if id is None:
-        return jsonify(error="Playlist ID is unset"), 400
-
-    # TODO: Paralell fetching doesn't currently work, child threads cannot use
+    # TODO: Parallel fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
+    to_spotify = request.args.get("to_spotify", False)
     p = Playlist(spotify, id, parallel_fetch=False)
-    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=False)
+
+    # TODO: Remove me, purely a debug step to save playlists.
+    if __debug__:
+        n = 0
+        debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
+        while debug_save_path.exists():
+            debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
+            n += 1
+        p.to_disk(debug_save_path)
+
+    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=to_spotify)
     new_track_ids = [i.id for i in tracks]
 
     return jsonify(ids_to_tracks(spotify, new_track_ids))

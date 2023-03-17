@@ -610,7 +610,7 @@ def simmer_playlist(
 
     This is the main entrypoint to the playlist processing engine. It queries a
     playlist for all the required information about a playlist, then reorders
-    the playlist based on the evaluation of 'evaluator'.
+    the playlist (in-place) based on the evaluation of 'evaluator'.
 
     :param p: Playlist to be reordered.
     :param evaluator: Engine to use for the evaluation.

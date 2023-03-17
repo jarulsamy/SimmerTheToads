@@ -1,33 +1,33 @@
 import axios from "axios";
 
+// Helper exception
+class NotImplemented extends Error {
+  constructor(message = "", ...args) {
+    this.message = `${message}: Not yet implemented`;
+  }
+}
+
 export default class APIService {
+  // Use a single axios session for all the API transactions.
+  // This way we preserve the session token.
   static axiosInstance = axios.create({
     withCredentials: true,
     baseURL: "/api/",
   });
 
-  // Insert an article
-  static sendPlaylist(body) {
-    return fetch(`/playlist`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })
-      .then((response) => response.json())
-      .catch((error) => console.log(error));
-  }
-
   static getPlaylists() {
     return this.axiosInstance.get("playlists");
   }
 
-  static setPlaylistID(id) {
-    return this.axiosInstance.put("playlist_id", { playlist_id: id });
+  static getPlaylistTracks(playlist_id) {
+    return this.axiosInstance.get(`playlist/${playlist_id}/tracks`);
   }
 
-  static getPlaylistID() {
-    return this.axiosInstance.get("playlist_id");
+  static simmeredPlaylistTracks(playlist_id, to_spotify = false) {
+    return this.axiosInstance.get(`simmered_playlist/${playlist_id}/tracks`, {
+      params: {
+        to_spotify: to_spotify,
+      },
+    });
   }
 }
