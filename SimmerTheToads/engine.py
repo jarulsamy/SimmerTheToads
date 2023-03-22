@@ -3,7 +3,7 @@ import itertools
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -605,7 +605,7 @@ def simmer_playlist(
     p: Playlist,
     evaluator: Type[PlaylistEvaluatorBase],
     to_spotify: Optional[bool] = False,
-) -> list[Track]:
+) -> List[Track]:
     """Reorder / add songs to playlist for simmering.
 
     This is the main entrypoint to the playlist processing engine. It queries a
