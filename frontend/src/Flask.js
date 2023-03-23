@@ -1,41 +1,42 @@
+import APIService from "./API_service";
 import React, { Component } from "react";
-import axios from "axios";
+import { APIContext } from "./API_service";
 
-export class Spotify extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isAuthenticated: localStorage.getItem("isAuthenticated"),
-      playlists: [],
-    };
-    this.axiosInstance = axios.create({
-      withCredentials: true,
-      baseURL: "/api/",
-    });
+const initialState = {
+  playlists: [],
+};
+
+export default class Spotify extends Component {
+  static contextType = APIContext;
+  state = { ...initialState };
+
+  setDefaultState() {
+    this.setState({ ...initialState });
   }
 
   componentDidMount() {
     // Restore the playlists if we are already logged in
-    if (!this.state["isAuthenticated"]) {
-      return;
-    }
-
-    this.populatePlaylists();
+    APIService.isLoggedIn().then((resp) => {
+      this.context.setLoggedIn(resp.data.logged_in);
+      this.populatePlaylists();
+    });
   }
 
   populatePlaylists() {
-    this.axiosInstance
-      .get("playlists", { withCredentials: true })
-      .then((resp) => this.setState({ playlists: resp.data.items }));
+    if (this.context.loggedIn) {
+      APIService.getPlaylists().then((resp) => {
+        this.setState({ ...this.state, playlists: resp.data.items });
+      });
+    }
   }
 
   login() {
-    if (this.state["isAuthenticated"]) {
+    if (this.context.loggedIn) {
       // Already logged in
       return;
     }
 
-    this.axiosInstance.post("login").then((resp) => {
+    APIService.login().then((resp) => {
       const auth_url = resp.data.auth_url;
 
       // TODO: Sizing this might be important...
@@ -49,16 +50,31 @@ export class Spotify extends Component {
       let id = setInterval(() => {
         if (login_win.closed) {
           clearInterval(id);
-          this.setState({ isAuthenticated: true });
-          localStorage.setItem("isAuthenticated", "true");
-          this.populatePlaylists();
+
+          APIService.isLoggedIn().then((r) => {
+            this.context.setLoggedIn(r.data.logged_in);
+            this.populatePlaylists();
+            window.location.reload();
+          });
         }
       }, 500);
     });
   }
 
+  logout() {
+    if (!this.context.loggedIn) {
+      return;
+    }
+
+    APIService.logout().then((resp) => {
+      this.context.setLoggedIn(false);
+      this.setDefaultState();
+      window.location.href = resp.request.responseURL;
+    });
+  }
+
   render() {
-    if (!this.state["isAuthenticated"]) {
+    if (!this.context.loggedIn) {
       // Show the login URL if not logged in.
       return (
         <div>
@@ -76,44 +92,21 @@ export class Spotify extends Component {
 
     // Otherwise, list all the playlists of the current user.
     return (
-      <ul>
-        {(this.state.playlists || []).map((i) => (
-          <li key={i.id}>{i.name}</li>
-        ))}
-      </ul>
-    );
-  }
-}
-
-// TODO: This can probably be consolidated with the 'Spotify' component...
-export class Flask extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { data: {} };
-  }
-
-  // Demo fetch from flask
-  componentDidMount() {
-    fetch("/api/")
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          this.setState({ data: result.message });
-        },
-        (error) => {
-          this.setState({ data: error });
-        }
-      );
-  }
-
-  render() {
-    return (
       <div>
-        <pre>{JSON.stringify(this.state["data"])}</pre>
-        <Spotify />
+        <ul>
+          {(this.state.playlists || []).map((i) => (
+            <li key={i.id}>{i.name}</li>
+          ))}
+        </ul>
+        <button
+          className="App-link"
+          href="#"
+          onClick={this.logout.bind(this)}
+          rel="noopener noreferrer"
+        >
+          Logout
+        </button>
       </div>
     );
   }
 }
-
-export default Flask;

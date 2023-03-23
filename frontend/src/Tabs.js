@@ -1,12 +1,10 @@
-import React from "react";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import About from "./About";
-import ExistingPlaylist from "./existing";
-import SongForm from "./song_form";
-import Flask from "./Flask";
 import "./css/Tabs.css";
-import APIService from "./API_service";
+import About from "./About";
 import PlaylistCards from "./PlaylistsView";
+import React from "react";
+import SongForm from "./song_form";
+import Spotify from "./Flask";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 
 function CreateTabs() {
   return (
@@ -23,7 +21,7 @@ function CreateTabs() {
       </TabPanel>
       <TabPanel className={"TabPanel"}>
         <h1>Spotify related things...</h1>
-        <Flask />
+        <Spotify />
       </TabPanel>
       <TabPanel className={"TabPanel"}>
         <About />

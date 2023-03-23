@@ -1,16 +1,17 @@
-// import logo from "./logo.svg";
-import { AlertPopup } from "./Alert";
 import "./css/App.css";
-// import axios from "axios";
-import Header from "./Header";
 import CreateTabs from "./Tabs";
+import Header from "./Header";
+import { APIContextProvider } from "./API_service";
+import { AlertPopup } from "./Alert";
 
 function App() {
   return (
     <div className="App">
-      <AlertPopup />
-      <Header />
-      <CreateTabs />
+      <APIContextProvider>
+        <AlertPopup />
+        <Header />
+        <CreateTabs />
+      </APIContextProvider>
     </div>
   );
 }

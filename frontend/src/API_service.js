@@ -1,11 +1,21 @@
 import axios from "axios";
+import React from "react";
 
-// Helper exception
-class NotImplemented extends Error {
-  constructor(message = "", ...args) {
-    this.message = `${message}: Not yet implemented`;
-  }
-}
+// https://react.dev/learn/passing-data-deeply-with-context#use-cases-for-context
+
+const initialState = {
+  loggedIn: false,
+};
+export const APIContext = React.createContext(initialState);
+export const APIContextProvider = ({ children }) => {
+  const [loggedIn, setLoggedIn] = React.useState(false);
+
+  return (
+    <APIContext.Provider value={{ loggedIn, setLoggedIn }}>
+      {children}
+    </APIContext.Provider>
+  );
+};
 
 export default class APIService {
   // Use a single axios session for all the API transactions.
@@ -14,6 +24,18 @@ export default class APIService {
     withCredentials: true,
     baseURL: "/api/",
   });
+
+  static isLoggedIn() {
+    return this.axiosInstance.get("login");
+  }
+
+  static login() {
+    return this.axiosInstance.post("login");
+  }
+
+  static logout() {
+    return this.axiosInstance.get("logout");
+  }
 
   static getPlaylists() {
     return this.axiosInstance.get("playlists");
