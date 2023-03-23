@@ -1,17 +1,18 @@
 # Simmer The Toads
 
-This is the primary Python module that will comprise our application.
+This is the primary Python module that will comprise our application. This
+module is responsible for all the authenticated Spotify API calls, playlist
+analysis/reordering, and serving the React frontend.
 
-The existing files/directories serve the following functions:
+The existing notable files/directories serve the following functions:
 
 - `views.py`: This is where all the major routes of our app will live. This can
   be split into smaller submodules if need be.
-- `static/`: Contains public CSS, JS, images, and other publicly viewable
-  assets.
-- `templates/`: Contains Jinja2 templates for HTML generation.
+- `engine.py`: Contains Flask agnostic Spotify integration (playlist
+  interactions, analysis, reordering, etc.).
 - `tests/`: Contains unit and integration testing assets.
 
-## Developer Environment Setup
+## Backend Developer Environment Setup
 
 1.  Install [Python 3.8](https://www.python.org/downloads/) or later.
 
@@ -30,7 +31,9 @@ The existing files/directories serve the following functions:
 
         $ flask --debug --app SimmerTheToads run
 
-5.  Navigate to `http://localhost:5000` to access the webapp.
+5.  Navigate to `http://127.0.0.1:5000/api` to access the WebAPI.
+    > Do not use 'localhost' in place of 127.0.0.1. Authentication relies on the
+    > origin to remain consistent between the backend and frontend.
 
 ## Useful Links
 
