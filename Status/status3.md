@@ -6,27 +6,37 @@ We have written about 1k lines of code! Our deliverables are as follows:
 
 ### Frontend
 
-- Rest API allows us to communicate between the frontend and backend.
 - Website has pages, is viable, and is prettier!
 - Frontend can take in songs then pass them to backend.
-- API endpoints exist for all frontend components
+- API endpoints exist for MVP frontend components (playlist metadata, simmering
+  actions, etc).
 - Frontend can talk to backend - API service!
-- UI libraries have been selected!
+- UI libraries have been selected (Google's Material UI)!
 
 ### Backend
 
 - We have a working sorting algorithm!
-   - Agglomerative clustering is used to handle data. All songs are treated as individual clusters, and are continually merged into bigger clusters until all points are sorted.
-   - We preprocess data by analysing Spotify's metadata on each song and cutting out all feaures below a 70% confidence level. This has allowed us to achieve significantly more accurate results, and reduce the amount of data we have to handle.
-   - Data is encorded with numbers as ordinal values - i.e. artists are now treated as numbers
-   - All of this is minmaxed and scaled for robustness.
+  - We preprocess data by analyzing Spotify's metadata on each song and cutting
+    out all features below a 70% confidence level. This has allowed us to
+    achieve significantly more accurate results, and reduce the amount of data
+    we have to handle. All of this is scaled for robustness.
+  - Categorical features (artists, genre, etc) are encoded as ordinal values.
+  - Time series data is averaged into sections and encoded as several columns of
+    ordinal values.
+  - Agglomerative clustering is used to cluster data. All songs are treated as
+    individual clusters and are continually merged into bigger clusters until
+    all points are sorted.
+  - Tracks within clusters are ordered by computing an euclidean distance matrix
+    for all the track features and calculating the minimum length tour (TSP).
 
 # Successes
 
 - MVP is done! We can now focus on adding more flavourful features.
 - Our algorithm works + we're successfully sorting playlists.
 - Our website works and looks decent.
-- Backend/Frontend/Spotify passing works, so playlists can successfully be loaded from Spotify to the frontend, sorted in the backend, and passed back to Spotify.
+- Backend/Frontend/Spotify passing works, so playlists can successfully be
+  loaded from Spotify to the frontend, sorted in the backend, and passed back to
+  Spotify.
 
 # Challenges
 
@@ -45,8 +55,9 @@ We have written about 1k lines of code! Our deliverables are as follows:
 ### Backend
 
 - Also fix login authentication
-- Develop algorithm for ordering clusters + inserting new songs to transition between clusters (TSP?)
-- Chaos mode.
+- Develop some alternative algorithms for playlist reordering (address bias,
+  etc.).
+- Chaos mode (NASA space entropy?!).
 
 # Completion Confidence
 
