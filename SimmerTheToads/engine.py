@@ -177,9 +177,13 @@ class Track:
         return len(self.analysis["tatums"])
 
     def get_analysis_features(
-        self, num_bars, num_beats, num_sections, num_tatums
+        self,
+        num_bars,
+        num_beats,
+        num_sections,
+        num_tatums,
     ) -> dict:
-        """TODO."""
+        """Get a Dataframe of all features used for analysis/clustering."""
         base_features = self.features
         analysis = self.analysis
 
@@ -577,7 +581,6 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         tsp = nx.approximation.traveling_salesman_problem
         path = tsp(G, cycle=False)
         # Ensure the path contains no duplicates, but also preserve the order.
-        # TODO: This could indicate a TSP bug...
         path = list(dict.fromkeys(path))
 
         # Generate the new resulting dataframe

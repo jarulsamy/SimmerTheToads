@@ -1,13 +1,14 @@
 """Contains all the 'views' that the flask application itself uses."""
 import functools
 import os
-from pathlib import Path
 
 import spotipy
-from flask import Blueprint, jsonify, redirect, request, session
+from flask import (Blueprint, jsonify, redirect, render_template, request,
+                   session)
 from spotipy.oauth2 import SpotifyOAuth
 
 from .engine import ClusteringEvaluator, Playlist, batched, simmer_playlist
+from .version import __version__
 
 # Retrieve these values from the spotify developer dashboard:
 #   https://developer.spotify.com/dashboard/applications
@@ -15,10 +16,9 @@ from .engine import ClusteringEvaluator, Playlist, batched, simmer_playlist
 # Set these in either .env or as environment variables
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 # This needs to be set in your spotify dashboard!
-# TODO: This should probably be in an environment variable...
-REDIRECT_URI = "http://127.0.0.1:5000/api/login_callback"
 OAUTH_SCOPES = [
     "playlist-read-private",
     "playlist-read-collaborative",
@@ -26,19 +26,22 @@ OAUTH_SCOPES = [
     "playlist-modify-public",
 ]
 
-# Setup the API blueprints
+# Setup the blueprints
+frontend_bp = Blueprint("frontend_bp", __name__)
 api_bp = Blueprint("api_bp", __name__)
 
-# Setup some debug facilities
-DEBUG_DUMP_DIR = Path("./.debug")
-DEBUG_DUMP_DIR.mkdir(exist_ok=True)
+
+@frontend_bp.route("/")
+def frontend_index():
+    """Return anything the frontend needs."""
+    return render_template("index.html")
 
 
 def logged_in(func):
     """Ensure a user is logged in before using that endpoint.
 
-    When used as a decarator, this function will automatically redirect to the
-    login endpoint if there is no cached user login available. If there is a
+    When used as a decarator, this function will automatically reject requests
+    with error 401 if there is no cached user login available. If there is a
     user logged in, the request is passed transparently to the function, along
     with an authenticated spotipy.Client.Spotify object.
 
@@ -51,6 +54,7 @@ def logged_in(func):
         @logged_in
         def my_endpoint(spotify): # This parameter is required!
             . . .
+
     """
 
     @functools.wraps(func)
@@ -73,9 +77,14 @@ def logged_in(func):
 
 
 @api_bp.route("/")
-def index():
+def api_index():
     """Template response."""
-    return jsonify({"message": "Hello from Flask!"})
+    return jsonify(
+        {
+            "version": __version__,
+            "message": "Hello from Flask!",
+        }
+    )
 
 
 @api_bp.route("/login", methods=["GET", "POST"])
@@ -110,7 +119,6 @@ def login():
             auth_url = auth_manager.get_authorize_url()
             return jsonify({"auth_url": auth_url})
 
-    # TODO: Handle closing the Oauth window if the user is already logged in.
     return jsonify(success=True)
 
 
@@ -129,10 +137,11 @@ def login_callback():
     if request.args.get("code"):
         # Step 2: Redirect from spotify back here.
         auth_manager.get_access_token(request.args.get("code"))
+        # Close the popup oauth window.
         return "<script>window.close()</script>"
 
-    # TODO: Some auth error occurred, handle appropiately
-    return 500
+    # TODO: Make this prettier
+    return "Something went wrong. Please try again.", 500
 
 
 @api_bp.route("/logout")
@@ -202,15 +211,6 @@ def get_simmered_playlist(spotify, id):
     # As a result, this is kinda slow...
     to_spotify = request.args.get("to_spotify", False)
     p = Playlist(spotify, id, parallel_fetch=False)
-
-    # TODO: Remove me, purely a debug step to save playlists.
-    if __debug__:
-        n = 0
-        debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
-        while debug_save_path.exists():
-            debug_save_path = DEBUG_DUMP_DIR / f"{id}.{n}.json"
-            n += 1
-        p.to_disk(debug_save_path)
 
     tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=to_spotify)
     new_track_ids = [i.id for i in tracks]
