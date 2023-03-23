@@ -26,7 +26,7 @@ function PlaylistCard({ id, name, description, images, songs = [] }) {
         setSimmerQueued(false);
       },
       (error) => {
-        console.log(error);
+        console.error(error);
         setAlert("error", "Something went wrong. Please try again.");
         setSimmerQueued(false);
       }
