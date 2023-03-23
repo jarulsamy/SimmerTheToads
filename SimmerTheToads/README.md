@@ -19,21 +19,61 @@ The existing notable files/directories serve the following functions:
 2.  Navigate to the root of this repository then create and activate a virtual
     environment.
 
-        $ python3 -m venv env
-        $ source env/bin/activate # mac/linux
-        $ env/bin/activate.bat    # windows
+    ```cli
+    $ python3 -m venv env
+    $ source env/bin/activate # mac/linux
+    $ env/bin/activate.bat    # windows
+    ```
 
 3.  Install the project dependencies.
 
-        $ pip install .
+    ```cli
+    $ pip install .
+    ```
 
 4.  Start the development web server.
 
-        $ flask --debug --app SimmerTheToads run
+    ```cli
+    $ flask --debug --app SimmerTheToads run
+    ```
 
 5.  Navigate to `http://127.0.0.1:5000/api` to access the WebAPI.
+
     > Do not use 'localhost' in place of 127.0.0.1. Authentication relies on the
     > origin to remain consistent between the backend and frontend.
+
+## Production Deployment
+
+1. Build the React frontend. From the root of the repository:
+
+   ```cli
+   $ cd frontend
+   $ npm ci
+   $ npm build
+   ```
+
+2. Try running the Flask application independent of NodeJS. From the root of the
+   repository:
+
+   ```cli
+   $ flask --debug --app SimmerTheToads run
+   ```
+
+   Navigating to `http://127.0.0.1:5000` should render the entire frontend
+   correctly, without having to start the NodeJS development environment.
+
+3. Update the relevant information within `.env` Most notably, the redirect URI
+   is almost certainly different between debug and production builds.
+
+4. Try starting the application with gunicorn directly.
+
+   ```cli
+   $ pip install gunicorn
+   $ gunicorn SimmerTheToads:app
+   ```
+
+   Navigating to `http://127.0.0.1:5000` should render the entire frontend
+   correctly.
 
 ## Useful Links
 
