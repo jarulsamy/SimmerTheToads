@@ -32,7 +32,7 @@ dynamic = ["version"]
 packages = ["SimmerTheToads"]
 
 [tool.setuptools.dynamic]
-version = { attr = "SimmerTheToads.__version__" }
+version = { attr = "SimmerTheToads.version.__version__" }
 
 [tool.pydocstyle]
 add_ignore = ["D107"]
