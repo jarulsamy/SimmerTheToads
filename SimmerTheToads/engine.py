@@ -7,6 +7,7 @@ from typing import List, Optional, Type
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import networkx.algorithms.approximation as nx_app
 import numpy as np
 import pandas as pd
 import scipy
@@ -599,8 +600,87 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         self._subcluster_opt()
         self._order_clusters()
 
+        print(
+            self._playlist.df[
+                [
+                    "track",
+                    "cluster_class_outer",
+                    "cluster_class_inner",
+                ]
+            ]
+        )
+
     def suggest(self):
         """Suggest songs to add in the playlist."""
+        raise NotImplementedError
+
+
+class ChaosEvaluator(PlaylistEvaluatorBase):
+    """Evaluate playlists try to make the least flowing playlist possible."""
+
+    def __init__(self, playlist: Playlist):
+        super().__init__(playlist)
+
+    def _preprocess_features(self, df: Optional[pd.DataFrame] = None):
+        if df is None:
+            df = self._playlist.df
+
+        # Ordinal encode the artists
+        if not np.issubdtype(df["artist"].dtype, np.number):
+            le = LabelEncoder()
+            artist = le.fit_transform(df["artist"])
+            artist = np.atleast_2d(artist).T
+            df["artist"] = artist
+
+        # Assume all numeric features are valid input features
+        numeric_df = df.select_dtypes(include=[np.number])
+
+        mm_scaler = MinMaxScaler()
+        numeric_df[:] = mm_scaler.fit_transform(numeric_df)
+        scaled = numeric_df.to_numpy()
+
+        return scaled
+
+    def reorder(self):
+        """Reorder the songs within the existing playlist.
+
+        Inverse TSP problem.
+        """
+        feature_matrix = np.sum(self._preprocess_features(), axis=1)
+        m, n = np.meshgrid(feature_matrix, feature_matrix)
+        distance_matrix = abs(m - n)
+        distance_matrix *= -1
+
+        offset = abs(np.min(distance_matrix)) + 1
+        distance_matrix += offset
+        np.fill_diagonal(distance_matrix, 0)
+
+        G = nx.from_numpy_array(distance_matrix)
+        # path = nx.approximation.traveling_salesman_problem(
+        #     G, cycle=False, method=nx.algorithms.approximation.greedy_tsp
+        # )
+        path = nx.algorithms.approximation.christofides(G)
+        path = path[:-1]
+        with np.printoptions(threshold=np.inf, precision=0, linewidth=np.inf):
+            print(distance_matrix)
+            print(np.asarray(path))
+            print(list(sorted(path)))
+            print(type(G))
+
+        self._playlist.df["cluster_class_outer"] = path
+        self._playlist.df = self._playlist.df.sort_values(by="cluster_class_outer")
+
+        print(
+            self._playlist.df[
+                [
+                    "track",
+                    "cluster_class_outer",
+                ]
+            ]
+        )
+
+    def suggest(self):
+        """Suggest songs to be added into the playlist."""
         raise NotImplementedError
 
 
@@ -622,8 +702,6 @@ def simmer_playlist(
     e = evaluator(p)
     e.reorder()
     # e.suggest()
-
-    print(p.df[["track", "cluster_class_outer", "cluster_class_inner"]])
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
@@ -677,10 +755,10 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["Bring it on back"])
+    p = Playlist(spotify, playlists["4 cat copy"])
 
     simmer_playlist(
         p,
-        ClusteringEvaluator,
-        to_spotify=True,
+        ChaosEvaluator,
+        to_spotify=False,
     )
