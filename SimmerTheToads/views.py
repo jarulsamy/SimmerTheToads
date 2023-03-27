@@ -138,7 +138,7 @@ def login_callback():
         # Step 2: Redirect from spotify back here.
         auth_manager.get_access_token(request.args.get("code"))
         # Close the popup oauth window.
-        return "<script>window.close()</script>"
+        return "<script>if (window != top) window.close();</script>"
 
     # TODO: Make this prettier
     return "Something went wrong. Please try again.", 500
