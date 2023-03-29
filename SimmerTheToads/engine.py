@@ -3,6 +3,7 @@ import itertools
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
+from pprint import pprint
 from typing import List, Optional, Type
 
 import matplotlib.pyplot as plt
@@ -429,6 +430,71 @@ class PlaylistEvaluatorBase(ABC):
         return self._playlist
 
 
+class TSPEvaluator(PlaylistEvaluatorBase):
+    """Evaluate playlists only using TSP."""
+
+    def __init__(self, playlist: Playlist):
+        super().__init__(playlist)
+
+    def _preprocess_features(self, df: Optional[pd.DataFrame] = None):
+        if df is None:
+            df = self._playlist.df
+
+        # Ordinal encode the artists
+        if not np.issubdtype(df["artist"].dtype, np.number):
+            le = LabelEncoder()
+            artist = le.fit_transform(df["artist"])
+            artist = np.atleast_2d(artist).T
+            df["artist"] = artist
+
+        # Assume all numeric features are valid input features
+        numeric_df = df.select_dtypes(include=[np.number])
+
+        mm_scaler = MinMaxScaler()
+        numeric_df[:] = mm_scaler.fit_transform(numeric_df)
+        scaled = numeric_df.to_numpy()
+
+        return scaled
+
+    def reorder(self):
+        """Reorder the songs within the existing playlist."""
+        feature_matrix = self._preprocess_features()
+        distance_matrix = scipy.spatial.distance_matrix(
+            feature_matrix,
+            feature_matrix,
+        )
+
+        G = nx.from_numpy_array(distance_matrix)
+        path = nx.approximation.traveling_salesman_problem(
+            G,
+            weight="weight",
+            nodes=set(G.nodes),
+            cycle=False,
+        )
+        # assert len(path) == len(feature_matrix)
+        if len(path) != len(distance_matrix):
+            print(
+                f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+            )
+            path = list(dict.fromkeys(path))
+
+        self._playlist.df["cluster_class_outer"] = path
+        self._playlist.df = self._playlist.df.sort_values(by="cluster_class_outer")
+
+        print(
+            self._playlist.df[
+                [
+                    "track",
+                    "cluster_class_outer",
+                ]
+            ]
+        )
+
+    def suggest(self):
+        """Suggest songs to add in the playlist."""
+        raise NotImplementedError
+
+
 class ClusteringEvaluator(PlaylistEvaluatorBase):
     """Evaluate playlists using sklearn's clustering algorithms."""
 
@@ -517,10 +583,6 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
                 feature_matrix, feature_matrix
             )
 
-            # Convert to int for some possible speedup. These numbers are always
-            # very large, so any rounding error is basically irrelevant.
-            distance_matrix = distance_matrix.astype(int)
-
             if np.sum(distance_matrix) == 0:
                 # Cluster of all the same songs, give them all the same inner class
                 self._playlist.df.loc[
@@ -530,8 +592,12 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
                 continue
 
             G = nx.from_numpy_array(distance_matrix)
-            tsp = nx.approximation.traveling_salesman_problem
-            path = tsp(G, cycle=False)
+            path = nx.approximation.traveling_salesman_problem(G, cycle=False)
+            if len(path) != len(distance_matrix):
+                print(
+                    f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+                )
+                path = list(dict.fromkeys(path))
 
             self._playlist.df.loc[
                 self._playlist.df.eval("cluster_class_outer == @cluster"),
@@ -646,26 +712,30 @@ class ChaosEvaluator(PlaylistEvaluatorBase):
 
         Inverse TSP problem.
         """
-        feature_matrix = np.sum(self._preprocess_features(), axis=1)
-        m, n = np.meshgrid(feature_matrix, feature_matrix)
-        distance_matrix = abs(m - n)
+        feature_matrix = self._preprocess_features()
+        distance_matrix = scipy.spatial.distance_matrix(
+            feature_matrix,
+            feature_matrix,
+        )
         distance_matrix *= -1
 
-        offset = abs(np.min(distance_matrix)) + 1
+        offset = abs(np.min(distance_matrix)) + 10
         distance_matrix += offset
         np.fill_diagonal(distance_matrix, 0)
 
         G = nx.from_numpy_array(distance_matrix)
-        # path = nx.approximation.traveling_salesman_problem(
-        #     G, cycle=False, method=nx.algorithms.approximation.greedy_tsp
-        # )
-        path = nx.algorithms.approximation.christofides(G)
-        path = path[:-1]
-        with np.printoptions(threshold=np.inf, precision=0, linewidth=np.inf):
-            print(distance_matrix)
-            print(np.asarray(path))
-            print(list(sorted(path)))
-            print(type(G))
+        path = nx.approximation.traveling_salesman_problem(
+            G,
+            weight="weight",
+            nodes=set(G.nodes),
+            cycle=False,
+        )
+
+        if len(path) != len(distance_matrix):
+            print(
+                f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+            )
+            path = list(dict.fromkeys(path))
 
         self._playlist.df["cluster_class_outer"] = path
         self._playlist.df = self._playlist.df.sort_values(by="cluster_class_outer")
@@ -755,10 +825,10 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["4 cat copy"])
+    p = Playlist(spotify, playlists["Bring it on back"])
 
     simmer_playlist(
         p,
-        ChaosEvaluator,
+        TSPEvaluator,
         to_spotify=False,
     )
