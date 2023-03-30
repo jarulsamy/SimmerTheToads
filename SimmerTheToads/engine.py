@@ -1,4 +1,5 @@
 """Primary playlist manipulation module."""
+import heapq
 import itertools
 import os
 from abc import ABC, abstractmethod
@@ -44,6 +45,13 @@ def batched(iterable, n):
     it = iter(iterable)
     while batch := tuple(itertools.islice(it, n)):
         yield batch
+
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
 
 
 class Track:
@@ -441,11 +449,10 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             df = self._playlist.df
 
         # Ordinal encode the artists
-        if not np.issubdtype(df["artist"].dtype, np.number):
-            le = LabelEncoder()
-            artist = le.fit_transform(df["artist"])
-            artist = np.atleast_2d(artist).T
-            df["artist"] = artist
+        le = LabelEncoder()
+        artist = le.fit_transform(df["artist"])
+        artist = np.atleast_2d(artist).T
+        df["artist_ord"] = artist
 
         # Assume all numeric features are valid input features
         numeric_df = df.select_dtypes(include=[np.number])
@@ -492,7 +499,69 @@ class TSPEvaluator(PlaylistEvaluatorBase):
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
-        raise NotImplementedError
+        # TODO: Handle single song playlist
+
+        # Preprocess
+        df = self._playlist.df.copy()
+        df = df.drop(
+            labels=["cluster_class_outer", "cluster_class_inner"],
+            axis=1,
+            errors="ignore",
+        )
+        max_suggestions = len(df) / 4
+        rows = list(df.iterrows())
+        cols_to_remove = [
+            "track",
+            "artist",
+            "id",
+            "uri",
+            "track_href",
+        ]
+
+        # Determine where we need to suggest new songs
+        distances = {}
+        for (i, first), (j, second) in pairwise(rows):
+            first = first.drop(cols_to_remove).to_numpy()
+            second = second.drop(cols_to_remove).to_numpy()
+            # TODO: Is hamming most appropiate?
+            dist = scipy.spatial.distance.hamming(first, second)
+            distances[(i, j)] = dist
+        suggestion_locs = heapq.nlargest(
+            max_suggestions,
+            distances,
+            key=distances.get,
+        )
+
+        feature_cols = [
+            "acousticness",
+            "danceability",
+            "energy",
+            "instrumentalness",
+            "liveness",
+            "loudness",
+            "speechiness",
+            "valence",
+        ]
+        # Get the actual suggestions and their locations
+        for i, j in suggestion_locs:
+            first = df.iloc[i]
+            second = df.iloc[j]
+
+            first_id = first.id
+            second_id = second.id
+
+            first_features = first[feature_cols]
+            second_features = second[feature_cols]
+            avg = (first_features + second_features) / 2
+
+            args = {"seed_tracks": [first_id, second_id]}
+            for col in feature_cols:
+                args[f"target_{col}"] = avg[col]
+
+            suggestions = self._playlist._spotify.recommendations(**args)
+
+            # TODO: evaluate the suggestions and find the best song for this
+            # transition.
 
 
 class ClusteringEvaluator(PlaylistEvaluatorBase):
@@ -771,7 +840,7 @@ def simmer_playlist(
     """
     e = evaluator(p)
     e.reorder()
-    # e.suggest()
+    e.suggest()
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
@@ -825,7 +894,7 @@ if __name__ == "__main__":
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["Bring it on back"])
+    p = Playlist(spotify, playlists["4 songs"])
 
     simmer_playlist(
         p,
