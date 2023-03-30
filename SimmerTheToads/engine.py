@@ -9,7 +9,6 @@ from typing import List, Optional, Type
 
 import matplotlib.pyplot as plt
 import networkx as nx
-import networkx.algorithms.approximation as nx_app
 import numpy as np
 import pandas as pd
 import scipy
@@ -502,13 +501,14 @@ class TSPEvaluator(PlaylistEvaluatorBase):
         # TODO: Handle single song playlist
 
         # Preprocess
-        df = self._playlist.df.copy()
-        df = df.drop(
-            labels=["cluster_class_outer", "cluster_class_inner"],
-            axis=1,
-            errors="ignore",
-        )
-        max_suggestions = len(df) / 4
+        df = self._playlist.df
+        # df = df.drop(
+        #     labels=["cluster_class_outer", "cluster_class_inner"],
+        #     axis=1,
+        #     errors="ignore",
+        # )
+        df["suggestion_index"] = 0
+        max_suggestions = len(df) // 4
         rows = list(df.iterrows())
         cols_to_remove = [
             "track",
@@ -554,14 +554,69 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             second_features = second[feature_cols]
             avg = (first_features + second_features) / 2
 
-            args = {"seed_tracks": [first_id, second_id]}
+            args = {"seed_tracks": [first_id, second_id], "limit": 3}
             for col in feature_cols:
                 args[f"target_{col}"] = avg[col]
 
+            # Retrieve suggestions from Spotify
             suggestions = self._playlist._spotify.recommendations(**args)
+            track_ids = [i["id"] for i in suggestions.get("tracks", [])]
 
-            # TODO: evaluate the suggestions and find the best song for this
-            # transition.
+            # Preprocess all the incoming data
+            features = []
+            for chunk in batched(track_ids, min(len(track_ids), 100)):
+                features.extend(self._playlist._spotify.audio_features(list(chunk)))
+
+            tracks = []
+            for m, f in zip(suggestions.get("tracks", []), features):
+                t = Track(self._playlist._spotify, m, f)
+                tracks.append(t)
+
+            analysis_params = {
+                "num_bars": 0,
+                "num_beats": 0,
+                "num_sections": 0,
+                "num_tatums": 0,
+            }
+            for k in analysis_params.keys():
+                analysis_params[k] = getattr(
+                    min(tracks, key=lambda x: getattr(x, k)),
+                    k,
+                )
+            rows = [i.get_analysis_features(**analysis_params) for i in tracks]
+            suggestion_df = pd.DataFrame(rows)
+            suggestion_df = suggestion_df.drop(
+                labels=["type", "analysis_url"],
+                axis=1,
+                errors="ignore",
+            )
+            suggestion_df.index = range(1, len(suggestion_df) + 1, 1)
+
+            # Find the song with the smallest distance from first and second
+            suggestion_features = suggestion_df[feature_cols].copy()
+
+            first_index = 0
+            second_index = len(suggestion_df)
+
+            suggestion_features.loc[first_index] = first_features.values
+            suggestion_features.loc[second_index] = second_features.values
+            suggestion_features = suggestion_features.sort_index()
+            suggestion_arr = suggestion_features.to_numpy()
+
+            distance_matrix = scipy.spatial.distance_matrix(
+                suggestion_arr, suggestion_arr
+            )
+            G = nx.from_numpy_array(distance_matrix)
+            G.remove_edge(first_index, second_index)
+            _, suggestion_index, _ = nx.algorithms.shortest_path(
+                G, source=first_index, target=second_index
+            )
+            suggestion_insertion_key = len(df)
+            df.loc[suggestion_insertion_key] = suggestion_df.loc[suggestion_index]
+            df.loc[suggestion_insertion_key, "suggestion_index"] = -suggestion_index
+            df.loc[
+                suggestion_insertion_key, ["cluster_class_outer", "cluster_class_inner"]
+            ] = df.loc[j, ["cluster_class_outer", "cluster_class_inner"]]
 
 
 class ClusteringEvaluator(PlaylistEvaluatorBase):
@@ -747,7 +802,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
-        raise NotImplementedError
+        pass
 
 
 class ChaosEvaluator(PlaylistEvaluatorBase):
@@ -820,7 +875,7 @@ class ChaosEvaluator(PlaylistEvaluatorBase):
 
     def suggest(self):
         """Suggest songs to be added into the playlist."""
-        raise NotImplementedError
+        pass
 
 
 def simmer_playlist(
@@ -838,13 +893,32 @@ def simmer_playlist(
     :param evaluator: Engine to use for the evaluation.
     :param to_spotify: Whether to write the modified playlist back to spotify.
     """
+    p.df["cluster_class_outer"] = 0
+    p.df["cluster_class_inner"] = 0
+    p.df["suggestion_index"] = 0
+
     e = evaluator(p)
     e.reorder()
     e.suggest()
 
+    p.df = p.df.sort_values(
+        by=["cluster_class_outer", "cluster_class_inner", "suggestion_index"],
+    )
+
     # Propogate local changes back to spotify playlist
     if to_spotify:
         p.to_spotify()
+
+    print(
+        p.df[
+            [
+                "track",
+                "cluster_class_outer",
+                "cluster_class_inner",
+                "suggestion_index",
+            ]
+        ]
+    )
 
     return list(p.df["track"])
 
@@ -891,13 +965,14 @@ if __name__ == "__main__":
         "4 cat copy": "3r4jK8owZWGUe8ET3YqPFG",
         "4 songs": "4C9aR5IxztGLZNWQrdO8Y1",
         "Bring it on back": "6HBoSjDYkQ5EKufcCbGja1",
+        "Bring it on back copy": "5uelnwP0VJbVGgw8SsyTOZ",
     }
 
     cache_path = Path("./playlist.pickle")
-    p = Playlist(spotify, playlists["4 songs"])
+    p = Playlist(spotify, playlists["Bring it on back copy"])
 
     simmer_playlist(
         p,
         TSPEvaluator,
-        to_spotify=False,
+        to_spotify=True,
     )
