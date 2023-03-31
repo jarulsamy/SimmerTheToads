@@ -446,80 +446,16 @@ class PlaylistEvaluatorBase(ABC):
     @abstractmethod
     def suggest(self):
         """Suggest songs to add in the playlist."""
-        pass
+        df = self._playlist.df
+        sort_cols = [i for i in df.columns if i.startswith("sort_")]
+        largest_sort_col = max(sort_cols, key=lambda x: int(x.split("_")[1]))
+        largest_sort_col = int(largest_sort_col.split("_")[1])
+        my_sort_col = f"sort_{largest_sort_col + 1}"
+        df[my_sort_col] = 0
 
-    @property
-    def playlist(self) -> Playlist:
-        """Get the playlist being evaluated."""
-        return self._playlist
-
-
-class TSPEvaluator(PlaylistEvaluatorBase):
-    """Evaluate playlists only using TSP.
-
-    Compute a feature matrix from all the songs within the playlist. Minimize
-    the distance of a tour through the playlist by reordering the tracks.
-    Distance can be computed with a variety of functions; euclidean, hamming,
-    etc.
-    """
-
-    def __init__(self, playlist: Playlist):
-        super().__init__(playlist)
-
-    def _preprocess_features(
-        self,
-        df: Optional[pd.DataFrame] = None,
-    ) -> np.array:
-        if df is None:
-            df = self._playlist.df
-
-        # Ordinal encode the artists
-        le = LabelEncoder()
-        artist = le.fit_transform(df["artist"])
-        artist = np.atleast_2d(artist).T
-        df["artist_ord"] = artist
-
-        # Assume all numeric features are valid input features
-        numeric_df = df.select_dtypes(include=[np.number])
-
-        mm_scaler = MinMaxScaler()
-        numeric_df[:] = mm_scaler.fit_transform(numeric_df)
-        scaled = numeric_df.to_numpy()
-
-        return scaled
-
-    def reorder(self):
-        """Reorder the songs within the existing playlist."""
-        feature_matrix = self._preprocess_features()
-        distance_matrix = scipy.spatial.distance_matrix(
-            feature_matrix,
-            feature_matrix,
-        )
-
-        G = nx.from_numpy_array(distance_matrix)
-        path = nx.approximation.traveling_salesman_problem(
-            G,
-            weight="weight",
-            nodes=set(G.nodes),
-            cycle=False,
-        )
-        if len(path) != len(distance_matrix):
-            logger.warning(
-                "Path length does not match distance matrix size (%d != %d)",
-                len(path),
-                len(distance_matrix),
-            )
-            path = list(dict.fromkeys(path))
-
-        self._playlist.df["sort_1"] = path
-
-    def suggest(self):
-        """Suggest songs to add in the playlist."""
         # TODO: Handle single song playlist
 
         # Preprocess
-        df = self._playlist.df
-        df["sort_2"] = 0
         # Up to 1/4 of the songs in the final playlist can be suggestions.
         max_suggestions = len(df) // 4
         rows = list(df.iterrows())
@@ -626,9 +562,79 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             )
             ins_key = len(df)
             df.loc[ins_key] = suggestion_df.loc[suggestion_index]
-            df.loc[ins_key, "sort_1"] = df.loc[i, "sort_1"]
-            df.loc[ins_key, "sort_2"] = suggestion_index
+            # Copy all the positional information of the song track before me.
+            df.loc[ins_key, sort_cols] = df.loc[i, sort_cols]
+            df.loc[ins_key, my_sort_col] = suggestion_index
             df.fillna(0, inplace=True)
+
+    @property
+    def playlist(self) -> Playlist:
+        """Get the playlist being evaluated."""
+        return self._playlist
+
+
+class TSPEvaluator(PlaylistEvaluatorBase):
+    """Evaluate playlists only using TSP.
+
+    Compute a feature matrix from all the songs within the playlist. Minimize
+    the distance of a tour through the playlist by reordering the tracks.
+    Distance can be computed with a variety of functions; euclidean, hamming,
+    etc.
+    """
+
+    def __init__(self, playlist: Playlist):
+        super().__init__(playlist)
+
+    def _preprocess_features(
+        self,
+        df: Optional[pd.DataFrame] = None,
+    ) -> np.array:
+        if df is None:
+            df = self._playlist.df
+
+        # Ordinal encode the artists
+        le = LabelEncoder()
+        artist = le.fit_transform(df["artist"])
+        artist = np.atleast_2d(artist).T
+        df["artist_ord"] = artist
+
+        # Assume all numeric features are valid input features
+        numeric_df = df.select_dtypes(include=[np.number])
+
+        mm_scaler = MinMaxScaler()
+        numeric_df[:] = mm_scaler.fit_transform(numeric_df)
+        scaled = numeric_df.to_numpy()
+
+        return scaled
+
+    def reorder(self):
+        """Reorder the songs within the existing playlist."""
+        feature_matrix = self._preprocess_features()
+        distance_matrix = scipy.spatial.distance_matrix(
+            feature_matrix,
+            feature_matrix,
+        )
+
+        G = nx.from_numpy_array(distance_matrix)
+        path = nx.approximation.traveling_salesman_problem(
+            G,
+            weight="weight",
+            nodes=set(G.nodes),
+            cycle=False,
+        )
+        if len(path) != len(distance_matrix):
+            logger.warning(
+                "Path length does not match distance matrix size (%d != %d)",
+                len(path),
+                len(distance_matrix),
+            )
+            path = list(dict.fromkeys(path))
+
+        self._playlist.df["sort_1"] = path
+
+    def suggest(self):
+        """Suggest songs to add in the playlist."""
+        return super().suggest()
 
 
 class ClusteringEvaluator(PlaylistEvaluatorBase):
@@ -701,7 +707,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
             "Playlist: %s with %d songs has %d clusters",
             self._playlist.id,
             len(self._playlist),
-            len(labels),
+            len(set(labels)),
         )
 
     def _subcluster_opt(self):
@@ -799,7 +805,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
-        pass
+        return super().suggest()
 
 
 class ChaosEvaluator(PlaylistEvaluatorBase):
@@ -867,7 +873,7 @@ class ChaosEvaluator(PlaylistEvaluatorBase):
 
     def suggest(self):
         """Suggest songs to be added into the playlist."""
-        pass
+        return super().suggest()
 
 
 def simmer_playlist(
@@ -887,7 +893,6 @@ def simmer_playlist(
     """
     p.df["sort_1"] = 0
     p.df["sort_2"] = 0
-    p.df["sort_3"] = 0
 
     e = evaluator(p)
     e.reorder()
@@ -911,6 +916,12 @@ if __name__ == "__main__":
     import spotipy
     from dotenv import load_dotenv
     from spotipy.oauth2 import SpotifyOAuth
+
+    LOG_LEVEL = logging.INFO
+    format_ = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(format=format_, level=LOG_LEVEL)
+    logger = logging.getLogger("SimmerTheToads")
+    logger.setLevel(LOG_LEVEL)
 
     load_dotenv()
 
@@ -956,6 +967,6 @@ if __name__ == "__main__":
 
     simmer_playlist(
         p,
-        ChaosEvaluator,
+        ClusteringEvaluator,
         to_spotify=False,
     )
