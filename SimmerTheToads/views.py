@@ -7,7 +7,8 @@ from flask import (Blueprint, jsonify, redirect, render_template, request,
                    session)
 from spotipy.oauth2 import SpotifyOAuth
 
-from .engine import ClusteringEvaluator, Playlist, batched, simmer_playlist
+from .engine import (ChaosEvaluator, ClusteringEvaluator, Playlist,
+                     TSPEvaluator, batched, simmer_playlist)
 from .version import __version__
 
 # Retrieve these values from the spotify developer dashboard:
@@ -54,7 +55,6 @@ def logged_in(func):
         @logged_in
         def my_endpoint(spotify): # This parameter is required!
             . . .
-
     """
 
     @functools.wraps(func)
@@ -169,7 +169,7 @@ def playlists(spotify):
 @api_bp.get("/playlist/<id>/tracks")
 @logged_in
 def get_playlist_tracks(spotify, id):
-    """Get all the tracks of the currently selected playlist."""
+    """Get all the tracks of the playlist."""
     # Validate the playlist ID
     track_items = []
     result = spotify.user_playlist_tracks(playlist_id=id)
@@ -206,13 +206,28 @@ def ids_to_tracks(spotify, ids):
 @logged_in
 def get_simmered_playlist(spotify, id):
     """Reorder a playlist and return the metadata."""
+    evaluators = {
+        "clustering": ClusteringEvaluator,
+        "tsp": TSPEvaluator,
+        "chaos": ChaosEvaluator,
+    }
     # TODO: Parallel fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
+    eval_key = request.args.get("evaluator", "clustering").lower()
+    e = evaluators[eval_key]
+
     to_spotify = request.args.get("to_spotify", False)
     p = Playlist(spotify, id, parallel_fetch=False)
 
-    tracks = simmer_playlist(p, ClusteringEvaluator, to_spotify=to_spotify)
+    tracks = simmer_playlist(p, evaluator=e, to_spotify=to_spotify)
     new_track_ids = [i.id for i in tracks]
 
     return jsonify(ids_to_tracks(spotify, new_track_ids))
+
+
+@api_bp.post("/update_playlist/<id>")
+@logged_in
+def update_playlist(spotify, id):
+    """Update a playlist on spotify with a list of given track IDs."""
+    raise NotImplementedError

@@ -1,10 +1,10 @@
 """Primary playlist manipulation module."""
 import heapq
 import itertools
+import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from pprint import pprint
 from typing import List, Optional, Type
 
 import matplotlib.pyplot as plt
@@ -21,7 +21,10 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, RobustScaler
 from spotipy.client import Spotify
 
+logger = logging.getLogger("SimmerTheToads")
+
 pd.set_option("display.max_columns", None)
+pd.set_option("display.max_rows", None)
 pd.set_option("display.width", None)
 np.set_printoptions(suppress=True)
 plt.style.use("seaborn-v0_8-paper")
@@ -47,7 +50,10 @@ def batched(iterable, n):
 
 
 def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    """Return sliding pairs from an iterable.
+
+    s -> (s0,s1), (s1,s2), (s2, s3), ...
+    """
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
@@ -69,14 +75,21 @@ class Track:
         "tatums",
     )
 
-    def __init__(self, spotify: Spotify, metadata: dict, features: dict):
+    def __init__(
+        self,
+        spotify: Spotify,
+        metadata: dict,
+        features: dict,
+        get_analysis=True,
+    ):
         self._metadata = metadata
         self._features = features
         self._features["track"] = self
         self._spotify = spotify
         self._analysis = {}
 
-        self._get_analysis()
+        if get_analysis:
+            self._get_analysis()
 
     def _get_analysis(self) -> None:
         track_remove_keys = (
@@ -187,10 +200,10 @@ class Track:
 
     def get_analysis_features(
         self,
-        num_bars,
-        num_beats,
-        num_sections,
-        num_tatums,
+        num_bars: int,
+        num_beats: int,
+        num_sections: int,
+        num_tatums: int,
     ) -> dict:
         """Get a Dataframe of all features used for analysis/clustering."""
         base_features = self.features
@@ -295,6 +308,7 @@ class Playlist:
             features.extend(self._spotify.audio_features(list(chunk)))
 
         if parallel_fetch:
+            # TODO: Repair this for flask requests.
             results = Parallel(n_jobs=os.cpu_count(), prefer="threads")(
                 delayed(Track)(self._spotify, m["track"], f)
                 for m, f in zip(track_items, features)
@@ -385,7 +399,6 @@ class Playlist:
             "time_signature",
         ]
 
-        hue = "cluster_class_outer" if "cluster_class_outer" in self.df else None
         for i, v in enumerate(relevant_cols):
             sns.lineplot(
                 data=self.df,
@@ -393,13 +406,13 @@ class Playlist:
                 y=v,
                 ax=lineplots_axes[i % (ncols + 1)][i // nrows],
                 markers=True,
-                hue=hue,
+                hue=None,
             )
             sns.histplot(
                 data=self.df,
                 x=v,
                 ax=distplots_axes[i % (ncols + 1)][i // nrows],
-                hue=hue,
+                hue=None,
             )
 
         if fmt_title is None:
@@ -412,6 +425,10 @@ class Playlist:
 
         distplots_fig.suptitle(title)
         distplots_fig.tight_layout()
+
+    def __len__(self):
+        """Get the number of tracks within this playlist."""
+        return len(self.df)
 
 
 class PlaylistEvaluatorBase(ABC):
@@ -438,12 +455,21 @@ class PlaylistEvaluatorBase(ABC):
 
 
 class TSPEvaluator(PlaylistEvaluatorBase):
-    """Evaluate playlists only using TSP."""
+    """Evaluate playlists only using TSP.
+
+    Compute a feature matrix from all the songs within the playlist. Minimize
+    the distance of a tour through the playlist by reordering the tracks.
+    Distance can be computed with a variety of functions; euclidean, hamming,
+    etc.
+    """
 
     def __init__(self, playlist: Playlist):
         super().__init__(playlist)
 
-    def _preprocess_features(self, df: Optional[pd.DataFrame] = None):
+    def _preprocess_features(
+        self,
+        df: Optional[pd.DataFrame] = None,
+    ) -> np.array:
         if df is None:
             df = self._playlist.df
 
@@ -477,24 +503,15 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             nodes=set(G.nodes),
             cycle=False,
         )
-        # assert len(path) == len(feature_matrix)
         if len(path) != len(distance_matrix):
-            print(
-                f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+            logger.warning(
+                "Path length does not match distance matrix size (%d != %d)",
+                len(path),
+                len(distance_matrix),
             )
             path = list(dict.fromkeys(path))
 
-        self._playlist.df["cluster_class_outer"] = path
-        self._playlist.df = self._playlist.df.sort_values(by="cluster_class_outer")
-
-        print(
-            self._playlist.df[
-                [
-                    "track",
-                    "cluster_class_outer",
-                ]
-            ]
-        )
+        self._playlist.df["sort_1"] = path
 
     def suggest(self):
         """Suggest songs to add in the playlist."""
@@ -502,12 +519,8 @@ class TSPEvaluator(PlaylistEvaluatorBase):
 
         # Preprocess
         df = self._playlist.df
-        # df = df.drop(
-        #     labels=["cluster_class_outer", "cluster_class_inner"],
-        #     axis=1,
-        #     errors="ignore",
-        # )
-        df["suggestion_index"] = 0
+        df["sort_2"] = 0
+        # Up to 1/4 of the songs in the final playlist can be suggestions.
         max_suggestions = len(df) // 4
         rows = list(df.iterrows())
         cols_to_remove = [
@@ -518,20 +531,24 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             "track_href",
         ]
 
-        # Determine where we need to suggest new songs
+        # Determine where we need to suggest new songs.
+        #
+        # Slide along the playlist in pairs ((a[0], a[1]), (a[1], a[2]), etc.),
+        # and find the two songs with the greatest distance.
         distances = {}
         for (i, first), (j, second) in pairwise(rows):
             first = first.drop(cols_to_remove).to_numpy()
             second = second.drop(cols_to_remove).to_numpy()
-            # TODO: Is hamming most appropiate?
             dist = scipy.spatial.distance.hamming(first, second)
             distances[(i, j)] = dist
+
         suggestion_locs = heapq.nlargest(
             max_suggestions,
             distances,
             key=distances.get,
         )
 
+        # These are all supported by Spotify's recommendation API as targets.
         feature_cols = [
             "acousticness",
             "danceability",
@@ -554,6 +571,7 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             second_features = second[feature_cols]
             avg = (first_features + second_features) / 2
 
+            # Assemble the payload for the Spotify API
             args = {"seed_tracks": [first_id, second_id], "limit": 3}
             for col in feature_cols:
                 args[f"target_{col}"] = avg[col]
@@ -564,26 +582,15 @@ class TSPEvaluator(PlaylistEvaluatorBase):
 
             # Preprocess all the incoming data
             features = []
-            for chunk in batched(track_ids, min(len(track_ids), 100)):
-                features.extend(self._playlist._spotify.audio_features(list(chunk)))
+            for b in batched(track_ids, min(len(track_ids), 100)):
+                features.extend(self._playlist._spotify.audio_features(list(b)))
 
             tracks = []
             for m, f in zip(suggestions.get("tracks", []), features):
-                t = Track(self._playlist._spotify, m, f)
+                t = Track(self._playlist._spotify, m, f, get_analysis=False)
                 tracks.append(t)
 
-            analysis_params = {
-                "num_bars": 0,
-                "num_beats": 0,
-                "num_sections": 0,
-                "num_tatums": 0,
-            }
-            for k in analysis_params.keys():
-                analysis_params[k] = getattr(
-                    min(tracks, key=lambda x: getattr(x, k)),
-                    k,
-                )
-            rows = [i.get_analysis_features(**analysis_params) for i in tracks]
+            rows = [i.features for i in tracks]
             suggestion_df = pd.DataFrame(rows)
             suggestion_df = suggestion_df.drop(
                 labels=["type", "analysis_url"],
@@ -593,6 +600,12 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             suggestion_df.index = range(1, len(suggestion_df) + 1, 1)
 
             # Find the song with the smallest distance from first and second
+            #
+            # Essentially, add the existing first and second songs as the first
+            # and last songs within the list of suggestions. Then, compute a
+            # fully-connected graph of the distances (like before). Remove the
+            # edge from the first and last tracks to force computation of a path
+            # including a suggested song.
             suggestion_features = suggestion_df[feature_cols].copy()
 
             first_index = 0
@@ -611,16 +624,20 @@ class TSPEvaluator(PlaylistEvaluatorBase):
             _, suggestion_index, _ = nx.algorithms.shortest_path(
                 G, source=first_index, target=second_index
             )
-            suggestion_insertion_key = len(df)
-            df.loc[suggestion_insertion_key] = suggestion_df.loc[suggestion_index]
-            df.loc[suggestion_insertion_key, "suggestion_index"] = -suggestion_index
-            df.loc[
-                suggestion_insertion_key, ["cluster_class_outer", "cluster_class_inner"]
-            ] = df.loc[j, ["cluster_class_outer", "cluster_class_inner"]]
+            ins_key = len(df)
+            df.loc[ins_key] = suggestion_df.loc[suggestion_index]
+            df.loc[ins_key, "sort_1"] = df.loc[i, "sort_1"]
+            df.loc[ins_key, "sort_2"] = suggestion_index
+            df.fillna(0, inplace=True)
 
 
 class ClusteringEvaluator(PlaylistEvaluatorBase):
-    """Evaluate playlists using sklearn's clustering algorithms."""
+    """Evaluate playlists using sklearn's clustering algorithms.
+
+    Compute a feature matrix from all the songs within the playlist. Attempt to
+    find clusters within the tracks, then reorder those clusters (and tracks) by
+    minimizing the distance of TSP tour through the playlist.
+    """
 
     def __init__(self, playlist: Playlist):
         super().__init__(playlist)
@@ -634,11 +651,10 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
             df = self._playlist.df
 
         # Ordinal encode the artists
-        if not np.issubdtype(df["artist"].dtype, np.number):
-            le = LabelEncoder()
-            artist = le.fit_transform(df["artist"])
-            artist = np.atleast_2d(artist).T
-            df["artist"] = artist
+        le = LabelEncoder()
+        artist = le.fit_transform(df["artist"])
+        artist = np.atleast_2d(artist).T
+        df["artist_ord"] = artist
 
         # Assume all numeric features are valid input features
         numeric_df = df.select_dtypes(include=[np.number])
@@ -649,12 +665,12 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         mm_scaler = MinMaxScaler()
 
         # Exclude categorical features from scaling
-        artist = numeric_df["artist"]
-        numeric_df = numeric_df.drop(labels=["artist"], axis=1)
+        artist = numeric_df["artist_ord"]
+        numeric_df = numeric_df.drop(labels=["artist_ord"], axis=1)
         # TODO: Investigate the deprecation warning
         numeric_df[:] = r_scaler.fit_transform(numeric_df)
         numeric_df[:] = mm_scaler.fit_transform(numeric_df)
-        numeric_df["artist"] = artist
+        numeric_df["artist_ord"] = artist
         scaled = numeric_df.to_numpy()
 
         # Principle component analysis
@@ -680,25 +696,27 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
                 linkage="ward",
             )
             labels = clustering.fit_predict(feature_matrix)
-
-        self._playlist.df["cluster_class_outer"] = labels
-        self._playlist.df = self._playlist.df.sort_values(
-            by=["cluster_class_outer"],
+        self._playlist.df["sort_1"] = labels
+        logger.info(
+            "Playlist: %s with %d songs has %d clusters",
+            self._playlist.id,
+            len(self._playlist),
+            len(labels),
         )
 
     def _subcluster_opt(self):
-        self._playlist.df["cluster_class_inner"] = 0
-        for cluster in self._playlist.df["cluster_class_outer"].unique():
-            df = self._playlist.df.query("cluster_class_outer == @cluster")
+        self._playlist.df["sort_2"] = 0
+        for cluster in self._playlist.df["sort_1"].unique():
+            df = self._playlist.df.query("sort_1 == @cluster")
             if len(df) <= 1:
                 # Can't optimize a single song cluster
                 continue
 
-            # Compute euclidean distance of all the features within the matrix
-            # TODO: Artist will definitely be wrong during this calculation...
+            # Compute distance of all the features within the matrix
             feature_matrix = df.select_dtypes(include=[np.number])
+            to_drop = [i for i in feature_matrix.columns if i.startswith("sort_")]
             feature_matrix = feature_matrix.drop(
-                labels=["cluster_class_outer", "cluster_class_inner"],
+                labels=to_drop,
                 axis=1,
                 errors="ignore",
             )
@@ -708,36 +726,27 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
             )
 
             if np.sum(distance_matrix) == 0:
-                # Cluster of all the same songs, give them all the same inner class
-                self._playlist.df.loc[
-                    self._playlist.df.eval("cluster_class_outer == @cluster"),
-                    "cluster_class_inner",
-                ] = 0
+                # Cluster of all the same songs
                 continue
 
             G = nx.from_numpy_array(distance_matrix)
             path = nx.approximation.traveling_salesman_problem(G, cycle=False)
             if len(path) != len(distance_matrix):
-                print(
-                    f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+                logger.warning(
+                    "Path length does not match distance matrix size (%d != %d)",
+                    len(path),
+                    len(distance_matrix),
                 )
                 path = list(dict.fromkeys(path))
 
             self._playlist.df.loc[
-                self._playlist.df.eval("cluster_class_outer == @cluster"),
-                "cluster_class_inner",
+                self._playlist.df.eval("sort_1 == @cluster"),
+                "sort_2",
             ] = path
-
-        self._playlist.df["cluster_class_inner"] = self._playlist.df[
-            "cluster_class_inner"
-        ].astype(int)
-        self._playlist.df = self._playlist.df.sort_values(
-            by=["cluster_class_outer", "cluster_class_inner"]
-        )
 
     def _order_clusters(self):
         """Reorder the clusters to minimize TSP across them."""
-        clusters = self._playlist.df["cluster_class_outer"].unique()
+        clusters = self._playlist.df["sort_1"].unique()
         n_clusters = len(clusters)
         if n_clusters <= 1:
             return
@@ -746,22 +755,22 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
 
         df = self._playlist.df.select_dtypes(include=[np.number])
         for i, src in enumerate(clusters):
-            src_df = df.query("cluster_class_outer == @src")
-            src_df = src_df.set_index("cluster_class_inner")
+            src_df = df.query("sort_1 == @src")
+            src_df = src_df.set_index("sort_2")
             # Last node from every cluster connects to first node within every
             # other node.
             src_node = src_df.iloc[-1]
             src_node = src_node.drop(
-                labels=["cluster_class_outer", "cluster_class_inner"],
+                labels=["sort_1", "sort_2"],
                 errors="ignore",
             )
             src_node = np.atleast_2d(src_node.to_numpy())
             for j, dst in enumerate(clusters):
-                dst_df = df.query("cluster_class_outer == @dst")
-                dst_df = dst_df.set_index("cluster_class_inner")
+                dst_df = df.query("sort_1 == @dst")
+                dst_df = dst_df.set_index("sort_2")
                 dst_node = dst_df.iloc[0]
                 dst_node = dst_node.drop(
-                    labels=["cluster_class_outer", "cluster_class_inner"],
+                    labels=["sort_1", "sort_2"],
                     errors="ignore",
                 )
                 dst_node = np.atleast_2d(dst_node.to_numpy())
@@ -778,9 +787,7 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         # TODO: There may be a more performant way to do this.
         result = pd.DataFrame()
         for i in path:
-            result = pd.concat(
-                [result, self._playlist.df.query("cluster_class_outer == @i")]
-            )
+            result = pd.concat([result, self._playlist.df.query("sort_1 == @i")])
 
         self._playlist.df = result
 
@@ -790,23 +797,16 @@ class ClusteringEvaluator(PlaylistEvaluatorBase):
         self._subcluster_opt()
         self._order_clusters()
 
-        print(
-            self._playlist.df[
-                [
-                    "track",
-                    "cluster_class_outer",
-                    "cluster_class_inner",
-                ]
-            ]
-        )
-
     def suggest(self):
         """Suggest songs to add in the playlist."""
         pass
 
 
 class ChaosEvaluator(PlaylistEvaluatorBase):
-    """Evaluate playlists try to make the least flowing playlist possible."""
+    """Evaluate playlists try to make the least flowing playlist possible.
+
+    Same as the TSPEvaluator, but maximize the distance instead.
+    """
 
     def __init__(self, playlist: Playlist):
         super().__init__(playlist)
@@ -816,11 +816,11 @@ class ChaosEvaluator(PlaylistEvaluatorBase):
             df = self._playlist.df
 
         # Ordinal encode the artists
-        if not np.issubdtype(df["artist"].dtype, np.number):
-            le = LabelEncoder()
-            artist = le.fit_transform(df["artist"])
-            artist = np.atleast_2d(artist).T
-            df["artist"] = artist
+        # Ordinal encode the artists
+        le = LabelEncoder()
+        artist = le.fit_transform(df["artist"])
+        artist = np.atleast_2d(artist).T
+        df["artist_ord"] = artist
 
         # Assume all numeric features are valid input features
         numeric_df = df.select_dtypes(include=[np.number])
@@ -856,22 +856,14 @@ class ChaosEvaluator(PlaylistEvaluatorBase):
         )
 
         if len(path) != len(distance_matrix):
-            print(
-                f"[WARNING]: Path length is invalid ({len(path != {len(distance_matrix)})}) "
+            logger.warning(
+                "Path length does not match distance matrix size (%d != %d)",
+                len(path),
+                len(distance_matrix),
             )
             path = list(dict.fromkeys(path))
 
-        self._playlist.df["cluster_class_outer"] = path
-        self._playlist.df = self._playlist.df.sort_values(by="cluster_class_outer")
-
-        print(
-            self._playlist.df[
-                [
-                    "track",
-                    "cluster_class_outer",
-                ]
-            ]
-        )
+        self._playlist.df["sort_1"] = path
 
     def suggest(self):
         """Suggest songs to be added into the playlist."""
@@ -893,32 +885,23 @@ def simmer_playlist(
     :param evaluator: Engine to use for the evaluation.
     :param to_spotify: Whether to write the modified playlist back to spotify.
     """
-    p.df["cluster_class_outer"] = 0
-    p.df["cluster_class_inner"] = 0
-    p.df["suggestion_index"] = 0
+    p.df["sort_1"] = 0
+    p.df["sort_2"] = 0
+    p.df["sort_3"] = 0
 
     e = evaluator(p)
     e.reorder()
     e.suggest()
 
-    p.df = p.df.sort_values(
-        by=["cluster_class_outer", "cluster_class_inner", "suggestion_index"],
-    )
+    sort_columns = [i for i in p.df.columns if i.startswith("sort_")]
+    p.df = p.df.sort_values(by=sort_columns)
 
     # Propogate local changes back to spotify playlist
     if to_spotify:
         p.to_spotify()
 
-    print(
-        p.df[
-            [
-                "track",
-                "cluster_class_outer",
-                "cluster_class_inner",
-                "suggestion_index",
-            ]
-        ]
-    )
+    cols_to_print = ["track", *sort_columns]
+    print(p.df[cols_to_print])
 
     return list(p.df["track"])
 
@@ -973,6 +956,6 @@ if __name__ == "__main__":
 
     simmer_playlist(
         p,
-        TSPEvaluator,
-        to_spotify=True,
+        ChaosEvaluator,
+        to_spotify=False,
     )

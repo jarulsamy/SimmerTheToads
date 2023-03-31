@@ -1,5 +1,6 @@
 """Entrypoint to flask full-stack application."""
 
+import logging
 import secrets
 from pathlib import Path
 
@@ -12,15 +13,18 @@ load_dotenv()
 
 LINE = "=" * 80
 
+# Setup the logger
+LOG_LEVEL = logging.INFO
+format_ = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(format=format_, level=LOG_LEVEL)
+logger = logging.getLogger("SimmerTheToads")
 
 # Paths for production deployments
 template_dir = Path("./frontend/build")
 static_dir = template_dir / "static/"
 
-
-print(LINE)
-print(f"{template_dir.absolute()=}")
-print(f"{static_dir.absolute()=}")
+logger.info("Template directory: %s", template_dir.absolute())
+logger.info("Static directory: %s", static_dir.absolute())
 
 app = Flask(
     __name__,
