@@ -10,6 +10,10 @@ export const APIContext = React.createContext(initialState);
 export const APIContextProvider = ({ children }) => {
   const [loggedIn, setLoggedIn] = React.useState(false);
 
+  APIService.isLoggedIn().then((resp) => {
+    setLoggedIn(resp.data.logged_in);
+  });
+
   return (
     <APIContext.Provider value={{ loggedIn, setLoggedIn }}>
       {children}
@@ -35,6 +39,10 @@ export default class APIService {
 
   static logout() {
     return this.axiosInstance.get("logout");
+  }
+
+  static getMe() {
+    return this.axiosInstance.get("me");
   }
 
   static getPlaylists() {

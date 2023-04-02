@@ -1,15 +1,14 @@
 // import "./css/Tabs.css";
-import React , { useState } from "react";
-import PropTypes from 'prop-types';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 import About from "./About";
-import PlaylistCards from "./PlaylistsView";
-import SongForm from "./song_form";
-import Spotify from "./Flask";
+import LoginButton from "./Login";
+import Home from "./Home";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -40,7 +39,7 @@ TabPanel.propTypes = {
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
 }
 
@@ -52,28 +51,22 @@ export default function CreateTabs() {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Create Playlist" {...a11yProps(0)} />
-          <Tab label="Spotify" {...a11yProps(1)} />
-          <Tab label="About" {...a11yProps(2)} />
-          <Tab label="Simmer Existing Playlist" {...a11yProps(3)} />
-        </Tabs>
+    <React.Fragment>
+      <Box sx={{ width: "100%" }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs value={value} onChange={handleChange} aria-label="Tabs">
+            <Tab label="Home" {...a11yProps(0)} />
+            <Tab label="About" {...a11yProps(1)} />
+            <LoginButton />
+          </Tabs>
+        </Box>
+        <TabPanel value={value} index={0}>
+          <Home />
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          <About />
+        </TabPanel>
       </Box>
-      <TabPanel value={value} index={0}>
-        <SongForm />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <h1>Spotify related things...</h1>
-        <Spotify />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        <About />
-      </TabPanel>
-      <TabPanel value={value} index={3}>
-        <PlaylistCards />
-      </TabPanel>
-    </Box>
+    </React.Fragment>
   );
 }
