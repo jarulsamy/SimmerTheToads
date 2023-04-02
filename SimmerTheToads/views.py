@@ -30,6 +30,9 @@ OAUTH_SCOPES = [
 # Setup the blueprints
 frontend_bp = Blueprint("frontend_bp", __name__)
 api_bp = Blueprint("api_bp", __name__)
+CLOSE_IF_CHILD_JS = r"""<script>
+    if (window.opener !== null) window.close();
+</script>"""
 
 
 @frontend_bp.route("/")
@@ -82,7 +85,7 @@ def api_index():
     return jsonify(
         {
             "version": __version__,
-            "message": "Hello from Flask!",
+            "message": "Hello from the Simmer The Toads team!",
         }
     )
 
@@ -138,7 +141,7 @@ def login_callback():
         # Step 2: Redirect from spotify back here.
         auth_manager.get_access_token(request.args.get("code"))
         # Close the popup oauth window.
-        return "<script>if (window != top) window.close();</script>"
+        return CLOSE_IF_CHILD_JS
 
     # TODO: Make this prettier
     return "Something went wrong. Please try again.", 500
@@ -231,3 +234,10 @@ def get_simmered_playlist(spotify, id):
 def update_playlist(spotify, id):
     """Update a playlist on spotify with a list of given track IDs."""
     raise NotImplementedError
+
+
+@api_bp.get("/me")
+@logged_in
+def get_me(spotify):
+    """Get info about the currently logged in user."""
+    return spotify.me()
