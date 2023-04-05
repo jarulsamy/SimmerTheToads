@@ -52,11 +52,14 @@ class UserDropdown extends Component {
       this.logout();
     };
 
-    // return <Button onClick={this.logout}>Logout</Button>;
     const anchorEl = this.state.anchorEl;
     const open = Boolean(anchorEl);
-    // const avatarURL = this.state.
-    const images = this.state.data.images ?? [{ url: undefined }];
+    let images;
+    if (Object.keys(this.state.data.images).length === 0) {
+      images = [{ url: undefined }];
+    } else {
+      images = this.state.data.images;
+    }
     const avatarURL = images[0].url;
 
     return (
