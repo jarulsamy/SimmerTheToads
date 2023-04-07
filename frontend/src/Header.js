@@ -1,15 +1,18 @@
 import "./css/Header.css";
 import logo from "./images/froggie.png"
 import React from "react";
+import Box from "@mui/material/Box";
+import { Typography } from "@mui/material";
 
 function Header() {
     return (
-        <div className="header">
-            <img src={logo} alt="Logo" className="logo"/>
-            <h1 className="title">Simmer the Toads</h1>
-        </div>
+        <React.Fragment>
+            <Box sx={{ width: "100%", bgcolor: "#8D9575" }}>
+                <Box component="img" src={logo} alt="Logo" className="logo"/>
+                <Typography variant="h3">Simmer the Toads</Typography>
+            </Box>
+        </React.Fragment>
     )
-    // consider adding an onClick to return to home page when logo is clicked
 }
 
 export default Header;
