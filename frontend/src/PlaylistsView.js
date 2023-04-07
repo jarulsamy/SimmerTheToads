@@ -8,18 +8,10 @@ import PlaylistCard from "./PlaylistCard";
 import SimmerMenu from "./Menu";
 import SimpleBackdrop from "./Loading";
 
-const cardsStyles = {
-  // backgroundColor: ,
-  // width: ,
-  height: "80vh",
-  overflowY: 'scroll'
-}
-
-class PlaylistCards extends React.Component {
+class PlaylistCardsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      playlists: [],
       toBeSimmered: [],
       simmerQueued: false,
       loading: false
@@ -29,11 +21,6 @@ class PlaylistCards extends React.Component {
     this.selectedCard = this.selectedCard.bind(this);
   }
 
-  componentDidMount() {
-    APIService.getPlaylists().then((resp) => {
-      this.setState({ playlists: resp.data.items });
-    });
-  }
 
   selectedCard(isNew, newID, newName) {
     if (isNew) {
@@ -84,25 +71,10 @@ class PlaylistCards extends React.Component {
   render() {
     return (
       <Container>
-        <Box sx={cardsStyles}>
-          <Grid container spacing={4} justifyContent="center">
-            {this.state.playlists.map((p) => {
-              return (
-                <Grid item key={p.id}>
-                  <Paper elevation={3}>
-                    <PlaylistCard
-                      id={p.id}
-                      name={p.name}
-                      description={p.description}
-                      images={p.images}
-                      selectedCard={this.selectedCard}
-                    />
-                  </Paper>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+        <div style={{overflowY: 'scroll', height: '80vh'}}>
+          <PlaylistCards selectedCard={this.selectedCard}/>
+
+        </div>
         <Box 
           m={1}
           //margin
@@ -117,6 +89,39 @@ class PlaylistCards extends React.Component {
   }
 }
 
-export default PlaylistCards;
+
+function PlaylistCards(props) {
+  const [playlists, setPlaylists] = React.useState([]);
+  
+  React.useEffect(() => {
+    APIService.getPlaylists().then((resp) => {
+      setPlaylists(resp.data.items);
+    });
+  }, [])
+  
+  return (
+    <Box >
+      <Grid container rowSpacing={4} spacing={4} justifyContent="center">
+        {playlists.map((p) => {
+          return (
+            <Grid item key={p.id}>
+              <Paper elevation={3}>
+                <PlaylistCard
+                  id={p.id}
+                  name={p.name}
+                  description={p.description}
+                  images={p.images}
+                  selectedCard={props.selectedCard}
+                  />
+              </Paper>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
+}
+
+export default PlaylistCardsContainer;
 
 

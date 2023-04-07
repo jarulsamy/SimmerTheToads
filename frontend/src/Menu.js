@@ -36,6 +36,14 @@ export default function SimmerMenu(props) {
           MenuListProps={{
             'aria-labelledby': 'basic-button',
           }}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right"
+          }}
+          transformOrigin={{
+            vertical: "bottom",
+            horizontal: "right"
+          }}
         >
           <MenuItem onClick={e => props.onChange(e.target.innerText)}>Simmer</MenuItem>
           <MenuItem onClick={e => props.onChange(e.target.innerText)}>Bake</MenuItem>
