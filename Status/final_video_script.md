@@ -16,7 +16,8 @@ Ideally, our frontend would allow users to lookup songs through Spotify to creat
 
 We developed the backend primarily in Python, utilizing the lightweight Spotify library SpotiPy as a wrapper for the Spotify API. It’s connected to the frontend using Flask, a web application framework. Apart from our Machine Learning frameworks, the backend primarily handles user authentication and communicating between Spotify and the Frontend. This allows us to streamline the process of logging a user in, accessing their playlists, and then simmering and sending back a playlist to spotify.
 
-Lastly, our Machine Learning components utiize 
+Our ML techniques were done using the Python Libray SKLearn. The problem of reordering songs into some “optimal order” on a given playlist can be considered an unsupervised problem in ML. Essentially, this means that our data is not labelled or tagged, and our model is expected to analyze and find patterns inside of it. All our model has to base its evaluations off of is the playlist analytics we grab from Spotify at the time of evaluation. Given these constraints, we have a few options for Machine Learning algorithms. Out of these, we chose Clustering and TSP. Sklearn's Clustering Framework groups songs together based on similarities. TSP optimizes the distance between songs, essentially ensuring that 
+
 
 ### Summry of Final Implementation
 >#### Design + Demonstration
