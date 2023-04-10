@@ -1,4 +1,4 @@
-// import "./css/Tabs.css";
+import "./css/Tabs.css";
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
@@ -53,8 +53,8 @@ export default function CreateTabs() {
   return (
     <React.Fragment>
       <Box sx={{ width: "100%" }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs value={value} onChange={handleChange} aria-label="Tabs">
+        <Box sx={{ borderBottom: 1, borderColor: "#422040" }}>
+          <Tabs sx={{ bgcolor: "#f8ebdf" }} value={value} onChange={handleChange} aria-label="Tabs">
             <Tab label="Home" {...a11yProps(0)} />
             <Tab label="About" {...a11yProps(1)} />
             <LoginButton />

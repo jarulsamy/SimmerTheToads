@@ -1,15 +1,20 @@
-.header {
-    background-color: #749C75;
+.Box {
+    background-color: #8D9575;
     min-height: 50px;
 }
 
 .logo {
-    height: 50px;
+    height: 56px;
     float: left;
-    padding: 10px;
+    padding-right: 10px;
 }
 
 .title {
     font: lighter;
     padding: 20px;
+}
+
+div {
+    position:sticky;
+    top:0px;
 }

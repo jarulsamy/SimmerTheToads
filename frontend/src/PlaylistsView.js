@@ -1,105 +1,136 @@
 import * as React from "react";
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Button from "@mui/material/Button";
+import { Box, Grid } from "@mui/material";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
-import { CardActionArea, Grid } from "@mui/material";
 import { useAlert } from "./Alert";
+import PlaylistCard from "./PlaylistCard";
+import SimmerMenu from "./Menu";
+import SimpleBackdrop from "./Loading";
 
-function PlaylistCard({ id, name, description, images, songs = [] }) {
-  const image = images[0] || { url: "", height: 300, width: 300 };
-  const { setAlert } = useAlert();
-  const [simmerQueued, setSimmerQueued] = React.useState(false);
-
-  async function simmerPlaylist(playlist_id, playlist_name) {
-    setSimmerQueued(true);
-    setAlert("info", `Started simmering ${playlist_name}. Please wait...`);
-    APIService.simmeredPlaylistTracks(playlist_id, true).then(
-      (resp) => {
-        console.log(`Simmered: ${playlist_id}`);
-        setAlert("success", `Successfully simmered: ${playlist_name}`);
-        setSimmerQueued(false);
-      },
-      (error) => {
-        console.error(error);
-        setAlert("error", "Something went wrong. Please try again.");
-        setSimmerQueued(false);
-      }
-    );
-  }
-
-  return (
-    <Card sx={{ width: 300 }} variant="outlined">
-      <CardActionArea onClick={() => console.log("TODO: Show a dialog here!")}>
-        <CardMedia
-          sx={{ height: 300 }}
-          component="img"
-          image={image.url}
-          title={name}
-        />
-        <CardContent>
-          <Typography gutterBottom variant="h5" component="div">
-            {name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {description}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-      <CardActions>
-        {!simmerQueued ? (
-          <Button size="small" onClick={() => simmerPlaylist(id, name)}>
-            Simmer
-          </Button>
-        ) : (
-          <></>
-        )}
-      </CardActions>
-    </Card>
-  );
-}
-
-class PlaylistCards extends React.Component {
+class PlaylistCardsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      playlists: [],
+      toBeSimmered: [],
+      simmerQueued: false,
+      loading: false,
     };
+
+    this.simmerPlaylist = this.simmerPlaylist.bind(this);
+    this.selectedCard = this.selectedCard.bind(this);
   }
 
-  componentDidMount() {
-    APIService.getPlaylists().then((resp) => {
-      this.setState({ playlists: resp.data.items });
-    });
+  selectedCard(isNew, newID, newName) {
+    if (isNew) {
+      console.log("adding to the list: " + newName);
+      this.setState((prevState) => ({
+        toBeSimmered: [...prevState.toBeSimmered, { id: newID, name: newName }],
+      }));
+    } else {
+      console.log("removing from the list: " + newName);
+      var temp = this.state.toBeSimmered;
+      var index = temp.indexOf({ id: newID, name: newName });
+      temp.splice(index, 1);
+      this.setState({ toBeSimmered: temp });
+    }
+  }
+
+  simmerPlaylist(simmerMethod) {
+    // this function is called when the user clicked one of the options in the dropdown menu
+    if (this.state.toBeSimmered.length > 0) {
+      // which simmering method
+      var evaluator =
+        simmerMethod === "Simmer"
+          ? "clustering"
+          : simmerMethod === "Bake"
+          ? "tsp"
+          : "chaos";
+      console.log("Simmering with method: " + evaluator);
+      this.setState({ loading: true });
+      this.state.toBeSimmered.forEach((playlist) => {
+        console.log(
+          "playlsit id: " + playlist.id + ", playlist name: " + playlist.name
+        );
+        this.setState({ setSimmerQueued: true });
+        // setAlert("info", `Started simmering ${playlist.name}. Please wait...`);
+        APIService.simmeredPlaylistTracks(playlist.id, true, evaluator).then(
+          (resp) => {
+            console.log(`Simmered: ${playlist.id}`);
+            // setAlert("success", `Successfully simmered: ${playlist.name}`);
+            this.setState({ setSimmerQueued: false });
+            this.setState({ loading: false });
+          },
+          (error) => {
+            console.error(error);
+            // setAlert("error", "Something went wrong. Please try again.");
+            this.setState({ setSimmerQueued: false });
+            this.setState({ loading: false });
+          }
+        );
+      });
+    } else {
+      console.log("no playlists to simmer");
+    }
   }
 
   render() {
     return (
       <Container>
-        <Grid container spacing={4} justifyContent="center">
-          {this.state.playlists.map((p) => {
-            return (
-              <Grid item key={p.id}>
-                <Paper elevation={3}>
-                  <PlaylistCard
-                    id={p.id}
-                    name={p.name}
-                    description={p.description}
-                    images={p.images}
-                  />
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
+        <div style={{ overflowY: "scroll", height: "80vh" }}>
+          <PlaylistCards selectedCard={this.selectedCard} />
+        </div>
+        <Box
+          m={1}
+          //margin
+          display="flex"
+          justifyContent="flex-end"
+          alignItems="flex-end"
+        >
+          <SimmerMenu onChange={this.simmerPlaylist} />
+        </Box>
+        {this.state.loading ? <SimpleBackdrop /> : <></>}
       </Container>
     );
   }
 }
 
-export default PlaylistCards;
+function PlaylistCards(props) {
+  const [playlists, setPlaylists] = React.useState([]);
+
+  React.useEffect(() => {
+    APIService.getPlaylists().then((resp) => {
+      setPlaylists(resp.data.items);
+    });
+  }, []);
+
+  return (
+    <Box>
+      <Grid
+        container
+        rowSpacing={4}
+        spacing={4}
+        justifyContent="center"
+        style={{ overflow: "auto" }}
+      >
+        {playlists.map((p) => {
+          return (
+            <Grid item key={p.id}>
+              <Paper elevation={3}>
+                <PlaylistCard
+                  id={p.id}
+                  name={p.name}
+                  description={p.description}
+                  images={p.images}
+                  selectedCard={props.selectedCard}
+                />
+              </Paper>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
+}
+
+export default PlaylistCardsContainer;
