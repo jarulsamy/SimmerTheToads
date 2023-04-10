@@ -41,3 +41,7 @@ Overall, while we achieved many of our minimum viable product and reach goals, t
 - Lastly, speeding up our simmering algorithms was another task that was too time and resource heavy for us to try now, but is a definite hope for the future.
 
 ### Closing & Summary
+
+Despite our challenges and the changes to our initial idea, we're proud of our final product. It accomplishes all the goals we set out for, and has really fulfilled the vision we had. We hope you love it just as much as we do!
+
+Tada :)
