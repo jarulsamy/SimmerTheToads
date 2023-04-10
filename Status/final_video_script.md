@@ -19,10 +19,12 @@ We developed the backend primarily in Python, utilizing the lightweight Spotify 
 Our ML techniques were done using the Python Libray SKLearn. The problem of reordering songs into some “optimal order” on a given playlist can be considered an unsupervised problem in ML. Essentially, this means that our data is not labelled or tagged, and our model is expected to analyze and find patterns inside of it. All our model has to base its evaluations off of is the playlist analytics we grab from Spotify at the time of evaluation. Given these constraints, we have a few options for Machine Learning algorithms. Out of these, we chose Clustering and TSP. Sklearn's Clustering Framework groups songs together based on similarities. TSP optimizes the distance between songs, essentially creating the optimal path of similarities between songs.
 
 ### Summry of Final Implementation
-#### Design + Demonstration
+#### Design + Demonstration (voiceover!)
 So, here's a brief video demonstration of our current product. I'm going to login using my Spotify account. Here, you can see all of your playlists, and select one or multiple to be simmered. I'm going to select this test playlist here...
+
 After you've selected your playlist, you can choose one of our three simmering algorithms to use: Simmering, which is our proprietary clustering algorithm, Baking, which is our TSP algorithm, and Microwaving, which is our "just for fun" algorithm that tries to make the worst-organized playlist.
 So let's simmer this playlist...
+
 ...and there we go! Let's take a look at our new, well-ordered playlist.
 
 #### Limitations
