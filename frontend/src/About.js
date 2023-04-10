@@ -22,21 +22,21 @@ function About() {
         "and making an aesthetic application)."
 
     return (
-        <>
+        <Box style={{ overflow: "auto" }}>
             {/* <Divider component="div" role="presentation">
                 <Typography variant="h3">About the Project</Typography>
             </Divider> */}
 
             {/* Motivation Section */}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} style={{overflow: "auto"}}>
                 <Grid item xs={3} />
                 <Grid item xs={6}>
-                    <Paper elevation={4} >
+                    <Paper elevation={4} sx = {{color:"text.secondary", bgcolor:'#a3ac88'}}>
                         <Box m={2} >
-                            <Typography variant="h4" color="text.primary">
+                            <Typography variant="h4" >
                                 Why We Made Simmer the Toads
                             </Typography>
-                            <Typography variant="body3" color="text.secondary" paragraph="true" >
+                            <Typography variant="body3" paragraph="true" >
                                 Consider this situation: you are stuck on a long road trip with many people you don't know. Naturally, you all have
                                 differing music tastes, and so there is little cohesion between all the different songs you may add. Simmer The Toads
                                 aims to solve this problem (and many others!) by creating a collaborative Spotify playlist platform, which not only
@@ -46,7 +46,7 @@ function About() {
                                 gently expand our tastes does not exist. Such a platform would aid in artist and genre discovery and even help get you
                                 more acquainted with the music tastes of your friends.
                             </Typography>
-                            <Typography variant="body3" color="text.secondary" paragraph="true">
+                            <Typography variant="body3" paragraph="true">
                                 When you boil frogs, you don’t put them in a hot pot initially - they’ll just jump straight out. You slowly but surely
                                 turn up the heat. With our Spotify extension’s seamless musical genre transition tools, before you know it, you and your
                                 friends (the proverbial frogs) will be “boiled” from Lana Del Rey’s dreamy chords to Nickelback’s 40 year old dad rock.
@@ -67,15 +67,15 @@ function About() {
                     <Typography variant="h3">How to Use Simmer the Toads</Typography>
                 </Divider>
             </Box> */}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} style={{ overflow: "auto" }}>
                 <Grid item xs={1} />
                 <Grid item xs={6}>
-                    <Paper elevation={4} >
+                    <Paper elevation={4} sx={{ color:"text.primary", bgcolor:'#B38D97' }}>
                         <Box m={2} >
-                            <Typography variant="h4" color="text.primary">
+                            <Typography variant="h4" >
                                 How To Use Simmer the Toads
                             </Typography>
-                            <Typography variant="body3" color="text.secondary">
+                            <Typography variant="body3">
                                 Simmer the Toads requires you to login to Spotify to function.
                                 If you don't want to use an existing playlist you can make a playlist (in Spotify) to use on Simmer the Toads.
                                 From there you can navigate to the main page and click the small simmer button under the playlist.
@@ -87,15 +87,15 @@ function About() {
                 <Grid item xs={5} />
             </Grid>
             {/* How it Works*/}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} style={{ overflow: "auto" }}>
                 <Grid item xs={5} />
                 <Grid item xs={6}>
-                    <Paper elevation={4} >
+                    <Paper elevation={4} sx={{ color:"#ECBEB4", bgcolor:'#422040'}}>
                         <Box m={2} >
-                            <Typography variant="h4" color="text.primary">
+                            <Typography variant="h4">
                                 How It Works
                             </Typography>
-                            <Typography variant="body3" color="text.secondary">
+                            <Typography variant="body3">
                                 Simmer the Toads uses traveling salesman and ...
                                 ...
                             </Typography>
@@ -117,7 +117,7 @@ function About() {
             <Typography variant="h3" color="text.primary" align="center">
                 Authors
             </Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} style={{ overflow: "auto" }}>
                 <Grid item xs={3}>
                     <Person name="Joseph"
                         image={JosephImage}
@@ -145,7 +145,7 @@ function About() {
             </Grid>
 
 
-        </>
+        </Box>
     );
 }
 

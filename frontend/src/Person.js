@@ -33,6 +33,7 @@ export default function Person({ name = "Froggie",
                                 image={image}
                                 // frontend/src/images/froggie.png
                                 alt="image of the person"
+                                sx={{ borderRadius: '10%' }}
                             />
                         </Box>
                     </ Paper>
