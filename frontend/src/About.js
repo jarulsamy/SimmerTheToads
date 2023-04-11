@@ -13,13 +13,19 @@ import Paper from '@mui/material/Paper';
 function About() {
     let JosephText = "Joseph enjoys writing elegant and understandable code, mainly because he forgets how his own code works. " +
         "He worked on the fronted."
-    let JoshText = "Josh is a VIM enthusiast (much less interesting than a Spotify enthusiast, he knows).He’ll primarily be working on the" +
-        "backend and some of the ML functionality, and ensuring that everything runs smoothly, quickly, and intuitively."
-    let LonaText = "Lona is a Spotify enthusiast and will primarily be helping with the API connections to both the backend and frontend." +
-        "She’s also excited to make the application pretty and practical!"
+    let JoshText = "Josh enjoys contributing to many open source projects and tinkering with Linux." +
+                    "He is a WRSP Scholar and works in the UWyo MALLET lab as an undergraduate research assistant." +
+                    "Currently, he is conducting empircal analysis on modern implementations of quicksort and exploring" +
+                    "new optimization techniques to improve performance."
+    let LonaText = "Lona is a San Diego native with interests in Machine Learning, and a focus in natural language processing." +
+                    "She currently works as an undergraduate research assistant at the UWyo MALLET Lab." +
+                    "Her current research is a comparison of how common ML tasks are done between the MLR3, SKLearn, and MLJulia packages." +
+                    "Outside of her research, she also works as a Teaching Assistant for the Intro to Computer Science course at UWyo," +
+                    "and as a student mentor for the Office of Student Success & Graduation." +
+                    "Her hobbies include cooking, making great coffee, and pilates. She's also a dance instructor of 3 years!"
     let NatalieText = "Natalie has experience with creating GUIs and is excited to experiment with react." +
-        "Her role includes mostly frontend work (creating the website, adding user functionality," +
-        "and making an aesthetic application)."
+                    "Her role includes mostly frontend work (creating the website, adding user functionality," +
+                    "and making an aesthetic application)."
 
     return (
         <Box style={{ overflow: "auto" }}>
