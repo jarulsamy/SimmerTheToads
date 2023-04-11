@@ -9,6 +9,7 @@ import Box from "@mui/material/Box";
 import About from "./About";
 import LoginButton from "./Login";
 import Home from "./Home";
+import { Stack } from "@mui/system";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -51,22 +52,26 @@ export default function CreateTabs() {
   };
 
   return (
-    <React.Fragment>
-      <Box sx={{ width: "100%" }}>
-        <Box sx={{ borderBottom: 1, borderColor: "#422040" }}>
+    <Box sx={{ width: "100%" }}>
+      <Stack >
+        <Box sx={{ borderBottom: 1, borderColor: "#422040", position: 'fixed', top: '56px', width: '100%', zIndex: '99' }}>
           <Tabs sx={{ bgcolor: "#f8ebdf" }} value={value} onChange={handleChange} aria-label="Tabs">
             <Tab label="Home" {...a11yProps(0)} />
             <Tab label="About" {...a11yProps(1)} />
             <LoginButton />
           </Tabs>
         </Box>
-        <TabPanel value={value} index={0}>
-          <Home />
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <About />
-        </TabPanel>
+        <Box sx={{overflowY: 'auto', zIndex: '1', marginTop: '56px'}}>
+          <TabPanel value={value} index={0}>
+            <Home />
+          </TabPanel>
+        </Box>
+        <Box sx={{overflowY: 'auto', zIndex: '1'}}>
+          <TabPanel value={value} index={1}>
+            <About />
+          </TabPanel>
+        </Box>
+      </Stack>
       </Box>
-    </React.Fragment>
   );
 }
