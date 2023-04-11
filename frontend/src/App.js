@@ -30,6 +30,11 @@ const theme = createTheme({
     default: "#f8ebdf"
   }
   },
+  typography: {
+    fontFamily: [
+      'Itim',
+      'Regular 400 ',
+    ].join(','),},
   shape: {
     borderRadius: 20
   }
