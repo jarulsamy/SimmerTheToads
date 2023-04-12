@@ -4,6 +4,7 @@ import Header from "./Header";
 import { APIContextProvider } from "./API_service";
 import { AlertPopup } from "./Alert";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Box } from "@mui/material";
 
 const theme = createTheme({
   palette: {
@@ -42,8 +43,12 @@ function App() {
       <ThemeProvider theme={theme}>
         <APIContextProvider>
           <AlertPopup />
-          <Header />
-          <CreateTabs />
+          <Box style={{position: "fixed", top: 0, width: '100%', zIndex: '99'}}>
+            <Header />
+          </Box>
+          <div style={{marginTop: '56px'}}>
+            <CreateTabs />
+          </div>
         </APIContextProvider>
       </ThemeProvider>
     </div>

@@ -22,7 +22,7 @@ function About() {
         "and making an aesthetic application)."
 
     return (
-        <Box style={{ overflow: "auto" }}>
+        <Box style={{ overflow: "scroll" }}>
             {/* <Divider component="div" role="presentation">
                 <Typography variant="h3">About the Project</Typography>
             </Divider> */}
