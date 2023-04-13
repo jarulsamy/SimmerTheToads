@@ -31,9 +31,12 @@ const theme = createTheme({
     default: "#f8ebdf"
   }
   },
+  typography: {
+    fontFamily: ["Nerko One", "cursive"].join(",")
+  },
   shape: {
     borderRadius: 20
-  }
+  },
 });
 
 

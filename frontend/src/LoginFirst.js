@@ -9,8 +9,8 @@ import Paper from "@mui/material/Paper";
 function LoginFirst() {
     return (
         <Container >
-            <Typography variant="h1">Hi! Welcome to our website</Typography>
-            <Typography variant="h3">We are Simmer The Toads. A spotify extention that aims to ...</Typography>
+            <Typography variant="h1">Well-ordered, seamless listening experiences.</Typography>
+            <Typography padding={4} variant="h3">We are Simmer The Toads: a Spotify extention that utilizes Machine Learning techniques to elegantly organize your playlists.</Typography>
             <Typography padding={4} variant="h5">We developed three algorithms that will organize your playlists:</Typography>
 
             <Grid container justifyContent="space-evenly">
