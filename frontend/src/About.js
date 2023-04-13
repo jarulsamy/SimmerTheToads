@@ -15,11 +15,19 @@ function About() {
   mainly because he forgets how his own code works. He worked on the
   fronted.`;
 
+<<<<<<< HEAD
   let JoshText = `Josh enjoys contributing to many open source projects and
   tinkering with Linux. "He is a WRSP Scholar and works in the UWyo MALLET lab
   as an undergraduate research assistant. Currently, he is conducting empircal
   analysis on modern implementations of quicksort and exploring new optimization
   techniques to improve performance.`;
+=======
+    return (
+        <Box style={{ overflow: "scroll" }}>
+            {/* <Divider component="div" role="presentation">
+                <Typography variant="h3">About the Project</Typography>
+            </Divider> */}
+>>>>>>> main
 
   let LonaText = `Lona is a San Diego native with interests in Machine Learning,
   and a focus in natural language processing.  She currently works as an

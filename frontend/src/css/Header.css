@@ -1,20 +1,5 @@
-.Box {
-    background-color: #8D9575;
-    min-height: 50px;
-}
-
 .logo {
     height: 56px;
     float: left;
     padding-right: 10px;
-}
-
-.title {
-    font: lighter;
-    padding: 20px;
-}
-
-div {
-    position:sticky;
-    top:0px;
 }
