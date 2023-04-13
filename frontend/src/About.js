@@ -31,147 +31,149 @@ function About() {
                     "You might not be surprised that she spends her free time reading!"
 
     return (
-        <Box style={{ overflow: "auto" }}>
-            {/* <Divider component="div" role="presentation">
-                <Typography variant="h3">About the Project</Typography>
-            </Divider> */}
+        <ThemeProvider theme={theme}> 
+            <Box style={{ overflow: "auto" }}>
+                {/* <Divider component="div" role="presentation">
+                    <Typography variant="h3">About the Project</Typography>
+                </Divider> */}
 
-            {/* Motivation Section */}
-            <Grid container spacing={2} style={{overflow: "auto"}}>
-                <Grid item xs={3} />
-                <Grid item xs={6}>
-                    <Paper elevation={4} sx = {{color:"text.secondary", bgcolor:'#a3ac88'}}>
-                        <Box m={2} >
-                            <Typography variant="h4" >
-                                Why We Made Simmer the Toads
-                            </Typography>
-                            <Typography variant="body3" paragraph="true" >
-                                Consider this situation: You are stuck on a long
-                                road trip with many people you don't know, and
-                                you are all queuing up songs on your favourite
-                                listening app for the drive. Naturally, you all
-                                have differing music tastes, and so there is
-                                little cohesion between all the different songs
-                                you may add. 
-                            </Typography>
-                            <Typography variant="body3" paragraph="true" >
-                            Our project, Simmer The Toads is
-                                our answer to this problem: a new Spotify
-                                extension that aims to refine a group’s
-                                selection of songs by bridging various artists
-                                and genres to create a seamless listening experience. 
-                            </Typography>
-                            <Typography variant="body3" paragraph="trueg">
-                            To many of us, music has become more than a daily part of our lives. We listen to and explore new artists all the time.
-                                STT aims to be a playlist service where we can come together to listen to the music that we already enjoy, but also
-                                gently expand our tastes does not exist. Such a platform would aid in artist and genre discovery and even help get you
-                                more acquainted with the music tastes of your friends.
-                            </Typography>
-                            <Typography variant="body3" paragraph="true">
-                                When you boil frogs, you don’t put them in a hot pot initially - they’ll just jump straight out. You slowly but surely
-                                turn up the heat. With our Spotify extension’s seamless musical genre transition tools, before you know it, you and your
-                                friends (the proverbial frogs) will be “boiled” from Lana Del Rey’s dreamy chords to Nickelback’s 40 year old dad rock.
-                                The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to the existing Spotify extension named
-                                “Boil The Frogs” that inspired this project. Simmer The Toads is a new Spotify extension that aims to refine a group’s
-                                selection of varying artists and genres to create a seamless listening experience.
-                            </Typography>
-                        </Box>
-                    </ Paper>
+                {/* Motivation Section */}
+                <Grid container spacing={2} style={{overflow: "auto"}}>
+                    <Grid item xs={3} />
+                    <Grid item xs={6}>
+                        <Paper elevation={4} sx = {{color:"text.secondary", bgcolor:'#a3ac88'}}>
+                            <Box m={2} >
+                                <Typography variant="h4" >
+                                    Why We Made Simmer the Toads
+                                </Typography>
+                                <Typography variant="body3" paragraph="true" >
+                                    Consider this situation: You are stuck on a long
+                                    road trip with many people you don't know, and
+                                    you are all queuing up songs on your favourite
+                                    listening app for the drive. Naturally, you all
+                                    have differing music tastes, and so there is
+                                    little cohesion between all the different songs
+                                    you may add. 
+                                </Typography>
+                                <Typography variant="body3" paragraph="true" >
+                                Our project, Simmer The Toads is
+                                    our answer to this problem: a new Spotify
+                                    extension that aims to refine a group’s
+                                    selection of songs by bridging various artists
+                                    and genres to create a seamless listening experience. 
+                                </Typography>
+                                <Typography variant="body3" paragraph="trueg">
+                                To many of us, music has become more than a daily part of our lives. We listen to and explore new artists all the time.
+                                    STT aims to be a playlist service where we can come together to listen to the music that we already enjoy, but also
+                                    gently expand our tastes does not exist. Such a platform would aid in artist and genre discovery and even help get you
+                                    more acquainted with the music tastes of your friends.
+                                </Typography>
+                                <Typography variant="body3" paragraph="true">
+                                    When you boil frogs, you don’t put them in a hot pot initially - they’ll just jump straight out. You slowly but surely
+                                    turn up the heat. With our Spotify extension’s seamless musical genre transition tools, before you know it, you and your
+                                    friends (the proverbial frogs) will be “boiled” from Lana Del Rey’s dreamy chords to Nickelback’s 40 year old dad rock.
+                                    The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to the existing Spotify extension named
+                                    “Boil The Frogs” that inspired this project. Simmer The Toads is a new Spotify extension that aims to refine a group’s
+                                    selection of varying artists and genres to create a seamless listening experience.
+                                </Typography>
+                            </Box>
+                        </ Paper>
+                    </Grid>
+                    <Grid item xs={3} />
                 </Grid>
-                <Grid item xs={3} />
-            </Grid>
-            
-            {/* Instructions on Use Section */}
-            {/* pt={3} */}
-            {/* <Box m={2} >
-                <Divider variant="middle" component="div">
-                    <Typography variant="h3">How to Use Simmer the Toads</Typography>
-                </Divider>
-            </Box> */}
-            <Grid container spacing={2} style={{ overflow: "auto" }}>
-                <Grid item xs={1} />
-                <Grid item xs={6}>
-                    <Paper elevation={4} sx={{ color:"text.primary", bgcolor:'#B38D97' }}>
-                        <Box m={2} >
-                            <Typography variant="h4" >
-                                How To Use Simmer the Toads
-                            </Typography>
-                            <Typography variant="body3">
-                                Simmer the Toads requires you to login to Spotify first.
-                                You'll be able to access your playlists from the main page.
-                                Click the playlists you want to simmer, select your algorithm, and enjoy!
-                                Note that STT does overwrite your existing playlists - to avoid this, we reccomend duplicating your playlist through Spotify.
-                            </Typography>
-                        </Box>
-                    </Paper>
+                
+                {/* Instructions on Use Section */}
+                {/* pt={3} */}
+                {/* <Box m={2} >
+                    <Divider variant="middle" component="div">
+                        <Typography variant="h3">How to Use Simmer the Toads</Typography>
+                    </Divider>
+                </Box> */}
+                <Grid container spacing={2} style={{ overflow: "auto" }}>
+                    <Grid item xs={1} />
+                    <Grid item xs={6}>
+                        <Paper elevation={4} sx={{ color:"text.primary", bgcolor:'#B38D97' }}>
+                            <Box m={2} >
+                                <Typography variant="h4" >
+                                    How To Use Simmer the Toads
+                                </Typography>
+                                <Typography variant="body3">
+                                    Simmer the Toads requires you to login to Spotify first.
+                                    You'll be able to access your playlists from the main page.
+                                    Click the playlists you want to simmer, select your algorithm, and enjoy!
+                                    Note that STT does overwrite your existing playlists - to avoid this, we reccomend duplicating your playlist through Spotify.
+                                </Typography>
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={5} />
                 </Grid>
-                <Grid item xs={5} />
-            </Grid>
-            {/* How it Works*/}
-            <Grid container spacing={2} style={{ overflow: "auto" }}>
-                <Grid item xs={5} />
-                <Grid item xs={6}>
-                    <Paper elevation={4} sx={{ color:"#ECBEB4", bgcolor:'#422040'}}>
-                        <Box m={2} >
-                            <Typography variant="h4">
-                                How It Works
-                            </Typography>
-                            <Typography variant="body3" paragraph="true" >
-                                First, our algorithm analyses metadata scraped from Spotify about each song. We can get simple information such as artist, genre, and album, but Spotify also allows us to pull more detailed features out, such as acousticness, valence, mood, energy, and danceability. All of this data is then analysed and preprocessed.
-                            </Typography>
-                            <Typography variant="body3" paragraph="true" >
-                            Next, we optimize the ordering of these songs. They’re sorted into clusters based on their similarity. Each cluster is then organized in some optimal order based on its “distance”, or feature closeness, from other clusters.
-                            </Typography>
-                            <Typography variant="body3" paragraph="true" >
-                            Lastly, we curate additional transition songs using Spotify’s recommendation API. These songs are added between clusters to make seamless listening transitions.
-                            </Typography>
-                        </Box>
-                    </Paper>
+                {/* How it Works*/}
+                <Grid container spacing={2} style={{ overflow: "auto" }}>
+                    <Grid item xs={5} />
+                    <Grid item xs={6}>
+                        <Paper elevation={4} sx={{ color:"#ECBEB4", bgcolor:'#422040'}}>
+                            <Box m={2} >
+                                <Typography variant="h4">
+                                    How It Works
+                                </Typography>
+                                <Typography variant="body3" paragraph="true" >
+                                    First, our algorithm analyses metadata scraped from Spotify about each song. We can get simple information such as artist, genre, and album, but Spotify also allows us to pull more detailed features out, such as acousticness, valence, mood, energy, and danceability. All of this data is then analysed and preprocessed.
+                                </Typography>
+                                <Typography variant="body3" paragraph="true" >
+                                Next, we optimize the ordering of these songs. They’re sorted into clusters based on their similarity. Each cluster is then organized in some optimal order based on its “distance”, or feature closeness, from other clusters.
+                                </Typography>
+                                <Typography variant="body3" paragraph="true" >
+                                Lastly, we curate additional transition songs using Spotify’s recommendation API. These songs are added between clusters to make seamless listening transitions.
+                                </Typography>
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={1} />
                 </Grid>
-                <Grid item xs={1} />
-            </Grid>
 
-            {/* The Use */}
-            <Box m={2} >
-                <Divider variant="middle" component="div">
-                    {/* <Typography variant="h3">How to Use Simmer the Toads</Typography> */}
-                </Divider>
+                {/* The Use */}
+                <Box m={2} >
+                    <Divider variant="middle" component="div">
+                        {/* <Typography variant="h3">How to Use Simmer the Toads</Typography> */}
+                    </Divider>
+                </Box>
+                {/* <Divider component="div" role="presentation">
+                    <Typography variant="h3">Authors</Typography>
+                </Divider> */}
+                <Typography variant="h3" color="text.primary" align="center">
+                    Authors
+                </Typography>
+                <Grid container spacing={2} style={{ overflow: "auto" }}>
+                    <Grid item xs={3}>
+                        <Person name="Joseph"
+                            image={JosephImage}
+                            description={JosephText}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <Person name="Josh"
+                            image={JoshImage}
+                            description={JoshText}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <Person name="Lona"
+                            image={LonaImage}
+                            description={LonaText}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <Person name="Natalie"
+                            image={NatalieImage}
+                            description={NatalieText}
+                        />
+                    </Grid>
+                </Grid>
+
+
             </Box>
-            {/* <Divider component="div" role="presentation">
-                <Typography variant="h3">Authors</Typography>
-            </Divider> */}
-            <Typography variant="h3" color="text.primary" align="center">
-                Authors
-            </Typography>
-            <Grid container spacing={2} style={{ overflow: "auto" }}>
-                <Grid item xs={3}>
-                    <Person name="Joseph"
-                        image={JosephImage}
-                        description={JosephText}
-                    />
-                </Grid>
-                <Grid item xs={3}>
-                    <Person name="Josh"
-                        image={JoshImage}
-                        description={JoshText}
-                    />
-                </Grid>
-                <Grid item xs={3}>
-                    <Person name="Lona"
-                        image={LonaImage}
-                        description={LonaText}
-                    />
-                </Grid>
-                <Grid item xs={3}>
-                    <Person name="Natalie"
-                        image={NatalieImage}
-                        description={NatalieText}
-                    />
-                </Grid>
-            </Grid>
-
-
-        </Box>
+        </ThemeProvider>
     );
 }
 

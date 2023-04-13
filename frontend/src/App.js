@@ -3,7 +3,7 @@ import CreateTabs from "./Tabs";
 import Header from "./Header";
 import { APIContextProvider } from "./API_service";
 import { AlertPopup } from "./Alert";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
@@ -31,13 +31,11 @@ const theme = createTheme({
   }
   },
   typography: {
-    fontFamily: [
-      'Itim',
-      'Regular 400 ',
-    ].join(','),},
+    fontFamily: ["Nerko One", "cursive"].join(",")
+  },
   shape: {
     borderRadius: 20
-  }
+  },
 });
 
 
