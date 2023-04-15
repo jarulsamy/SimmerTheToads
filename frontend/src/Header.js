@@ -1,5 +1,5 @@
 import "./css/Header.css";
-import logo from "./images/froggie.png"
+import logo from "./images/headphone_froggie.png"
 import React from "react";
 import Box from "@mui/material/Box";
 import { Typography } from "@mui/material";

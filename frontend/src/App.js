@@ -5,6 +5,7 @@ import { APIContextProvider } from "./API_service";
 import { AlertPopup } from "./Alert";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box } from "@mui/material";
+import froggie_bg from "./images/long_bg.png"
 
 const theme = createTheme({
   palette: {
@@ -43,17 +44,21 @@ const theme = createTheme({
 function App() {
   return (
     <div className="App">
-      <ThemeProvider theme={theme}>
-        <APIContextProvider>
-          <AlertPopup />
-          <Box style={{position: "fixed", top: 0, width: '100%', zIndex: '99'}}>
-            <Header />
-          </Box>
-          <div style={{marginTop: '56px'}}>
-            <CreateTabs />
-          </div>
-        </APIContextProvider>
-      </ThemeProvider>
+      <div style={
+        { backgroundImage: `url(${froggie_bg})`, backgroundSize:"contain", backgroundAttachment: 'fixed', backgroundPosition: 'center bottom', backgroundColor: '#f3e3db'}
+        }>
+        <ThemeProvider theme={theme}>
+          <APIContextProvider>
+            <AlertPopup />
+            <Box style={{position: "fixed", top: 0, width: '100%', zIndex: '99'}}>
+              <Header />
+            </Box>
+            <div style={{marginTop: '56px'}}>
+              <CreateTabs />
+            </div>
+          </APIContextProvider>
+        </ThemeProvider>
+      </div>
     </div>
   );
 }
