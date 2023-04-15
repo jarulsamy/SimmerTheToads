@@ -6,14 +6,13 @@ import JosephImage from "./images/Joseph.png";
 import JoshImage from "./images/Josh.png";
 import LonaImage from "./images/Lona.png";
 import NatalieImage from "./images/Natalie.jpg";
+import headphone_froggie from "./images/headphone_froggie.png";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 
 function About() {
-  let JosephText = `Joseph enjoys writing elegant and understandable code,
-  mainly because he forgets how his own code works. He worked on the
-  fronted.`;
+  let JosephText = `Having grown up in Alaska, Joseph moved to the Continental US to pursue higher education. His inquisitive nature has driven him to explore various subfields within Computer Science. Presently, he is directing his efforts toward gaining expertise in applying Machine Learning and comprehending Ray Tracing. Joseph is an enthusiastic reader and has been Nordic skiing for as long as he can remember.`;
 
   let JoshText = `Josh enjoys contributing to many open source projects and
   tinkering with Linux. "He is a WRSP Scholar and works in the UWyo MALLET lab

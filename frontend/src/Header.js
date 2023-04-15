@@ -6,7 +6,7 @@ import { Typography } from "@mui/material";
 
 function Header() {
     return (
-        <Box sx={{ width: "100%", bgcolor: "#8D9575", zIndex: '99' }}>
+        <Box sx={{ width: "100%", bgcolor: "#ECBEB4", zIndex: '99' }}>
             <Box component="img" src={logo} alt="Logo" className="logo"/>
             <Typography variant="h3">Simmer the Toads</Typography>
         </Box>
