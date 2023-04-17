@@ -1,12 +1,13 @@
 import React from "react";
 import Person from "./Person";
+import NiceImage from "./NiceImage";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import JosephImage from "./images/Joseph.png";
 import JoshImage from "./images/Josh.png";
 import LonaImage from "./images/Lona.png";
 import NatalieImage from "./images/Natalie.jpg";
-import headphone_froggie from "./images/headphone_froggie.png";
+import hooray_froggie from "./images/celebratory_froggie.png";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -42,14 +43,16 @@ function About() {
   return (
     <Box style={{ overflow: "auto" }}>
       <Grid container spacing={2} style={{ overflow: "auto" }}>
-        <Grid item xs={3} />
+        <Grid item xs={6}>
+          <NiceImage image={hooray_froggie}/>
+        </Grid>
         <Grid item xs={6}>
           <Paper
             elevation={4}
             sx={{ color: "text.secondary", bgcolor: "#a3ac88" }}
           >
             <Box m={2}>
-              <Typography variant="h4">Why We Made Simmer the Toads</Typography>
+            <Typography variant="h4">The Backstory...</Typography>
               <Typography variant="body3" paragraph="true">
                 Consider this situation: You are stuck on a long road trip with
                 many people you don't know, and you are all queuing up songs on
@@ -68,8 +71,8 @@ function About() {
                 lives. We listen to and explore new artists all the time. STT
                 aims to be a playlist service where we can come together to
                 listen to the music that we already enjoy, but also gently
-                expand our tastes does not exist. Such a platform would aid in
-                artist and genre discovery and even help get you more acquainted
+                expand our tastes. We hope to aid in
+                artist and genre discovery, and even help get you more acquainted
                 with the music tastes of your friends.
               </Typography>
               <Typography variant="body3" paragraph="true">
@@ -81,14 +84,11 @@ function About() {
                 chords to Nickelback's 40 year old dad rock. The affectionate
                 nickname “Simmer the Toads”, is our homage to this adage, and to
                 the existing Spotify extension named “Boil The Frogs” that
-                inspired this project. Simmer The Toads is a new Spotify
-                extension that aims to refine a group's selection of varying
-                artists and genres to create a seamless listening experience.
+                inspired this project.
               </Typography>
             </Box>
           </Paper>
         </Grid>
-        <Grid item xs={3} />
       </Grid>
 
       <Grid container spacing={2} style={{ overflow: "auto" }}>

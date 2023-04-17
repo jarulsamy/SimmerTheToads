@@ -19,7 +19,7 @@ function LoginFirst() {
                         <Box padding={3} color="text.secondary" bgcolor='#a3ac88'>
                             <Typography variant="h4">Simmer</Typography>
                             <Typography variant="body2">
-                                A clustering based approach that will smooth out the transitions between all the different genres in your playlist.
+                                A clustering based approach that will smooth out the transitions between all the different genres in your playlist by grouping them with similar songs.
                             </Typography>
                         </Box>
                     </Paper>
