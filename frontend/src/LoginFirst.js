@@ -11,7 +11,7 @@ function LoginFirst() {
         <Container >
             <Typography variant="h1">Well-ordered, seamless listening experiences.</Typography>
             <Typography padding={4} variant="h3">We are Simmer The Toads: a Spotify extention that utilizes Machine Learning techniques to elegantly organize your playlists.</Typography>
-            <Typography padding={4} variant="h5">We developed three algorithms for you to choose from:</Typography>
+            <Typography padding={4} variant="h4">We developed three algorithms for you to choose from:</Typography>
 
             <Grid container justifyContent="space-evenly">
                 <Grid sx={{width: '25%'}} item justifyContent={'center'}>
@@ -42,7 +42,7 @@ function LoginFirst() {
                     </Paper>
                 </Grid>
             </Grid>
-            <Typography padding={4} variant="h5">To use these, please login to your Spotify account!</Typography>
+            <Typography padding={4} variant="h4">To use these, please login to your Spotify account!</Typography>
         </Container>
     )
 }

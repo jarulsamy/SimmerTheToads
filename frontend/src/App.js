@@ -33,7 +33,28 @@ const theme = createTheme({
   }
   },
   typography: {
-    fontFamily: ["Nerko One", "cursive"].join(",")
+    fontFamily: ["DynaPuff", "cursive"].join(","),
+    h1: {
+      fontFamily: ["DynaPuff", "cursive"].join(",")
+    },
+    h2: {
+      fontFamily: ["DynaPuff", "cursive"].join(",")
+    },
+    h3: {
+      fontFamily: ["DynaPuff", "cursive"].join(",")
+    },
+    h4: {
+      fontFamily: ["DynaPuff", "cursive"].join(",")
+    },
+    body1: {
+      fontFamily: ["Alata", "sans-serif"].join(",")
+    },
+    body2: {
+      fontFamily: ["Alata", "sans-serif"].join(",")
+    },
+    body3: {
+      fontFamily: ["Alata", "sans-serif"].join(",")
+    }
   },
   shape: {
     borderRadius: 20

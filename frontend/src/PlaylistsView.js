@@ -4,9 +4,18 @@ import { Box, Grid } from "@mui/material";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
 import { useAlert } from "./Alert";
+import bubble_stretched from "./images/long_lotus.png"
+import celebratory_froggie from "./images/celebratory_froggie.png"
 import PlaylistCard from "./PlaylistCard";
 import SimmerMenu from "./Menu";
 import SimpleBackdrop from "./Loading";
+import {
+  Dialog,
+  DialogActions,
+  Typography,
+  DialogTitle,
+  Button,
+} from "@mui/material";
 
 class PlaylistCardsContainer extends React.Component {
   constructor(props) {
@@ -15,6 +24,7 @@ class PlaylistCardsContainer extends React.Component {
       toBeSimmered: [],
       simmerQueued: false,
       loading: false,
+      loadingcomplete: false,
     };
 
     this.simmerPlaylist = this.simmerPlaylist.bind(this);
@@ -60,6 +70,7 @@ class PlaylistCardsContainer extends React.Component {
             // setAlert("success", `Successfully simmered: ${playlist.name}`);
             this.setState({ setSimmerQueued: false });
             this.setState({ loading: false });
+            this.setState({loadingcomplete: true});
           },
           (error) => {
             console.error(error);
@@ -87,11 +98,25 @@ class PlaylistCardsContainer extends React.Component {
           justifyContent="flex-end"
           alignItems="flex-end"
         >
-        <footer style={{position: "fixed", bottom: 0, paddingBottom: 20, backgroundColor: 'white'}}>
+        <footer style={{position: "fixed", bottom: 0, paddingBottom: 20, backgroundImage: `url(${bubble_stretched})`, backgroundSize:"contain", backgroundRepeat: 'no-repeat'}}>
           <SimmerMenu onChange={this.simmerPlaylist} />
         </footer>        
         </Box>
         {this.state.loading ? <SimpleBackdrop /> : <></>}
+        {/* {this.state.loadingcomplete ? 
+          <Dialog
+            open={true}
+            // onClose={} should trigger dialogue to close?
+            style={{width: '200px', marginLeft: '40%', marginTop: '40%', backgroundImage: `url(${celebratory_froggie})`, backgroundSize:"contain", backgroundRepeat: 'no-repeat'}}
+          >
+          <DialogTitle>
+            {" "}
+            <Typography variant="h4">Playlist simmered!</Typography>
+          </DialogTitle>
+          <DialogActions>
+            <Button variant="contained" color= "#f8ebdf">Close</Button>
+          </DialogActions>
+        </Dialog> : <></>}  */}
       </Container>
     );
   }

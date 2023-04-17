@@ -5,7 +5,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import lotus_bg from "./images/lotus_bg.png"
+// import lotus_bg from "./images/lotus_bg.png"
 import About from "./About";
 import LoginButton from "./Login";
 import Home from "./Home";
