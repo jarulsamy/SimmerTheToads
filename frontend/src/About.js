@@ -12,6 +12,7 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 
+
 function About() {
   let JosephText = `Having grown up in Alaska, Joseph moved to the Continental US to pursue higher education. His inquisitive nature has driven him to explore various subfields within Computer Science. Presently, he is directing his efforts toward gaining expertise in applying Machine Learning and comprehending Ray Tracing. Joseph is an enthusiastic reader and has been Nordic skiing for as long as he can remember.`;
 
@@ -41,7 +42,7 @@ function About() {
   UW. You might not be surprised that she spends her free time reading!`;
 
   return (
-    <Box style={{ overflow: "auto" }}>
+    <Box style={{ overflow: "auto"}}>
       <Grid container spacing={2} style={{ overflow: "auto" }}>
         <Grid item xs={6}>
           <NiceImage image={hooray_froggie}/>
@@ -52,7 +53,7 @@ function About() {
             sx={{ color: "text.secondary", bgcolor: "#a3ac88" }}
           >
             <Box m={2}>
-            <Typography variant="h4">The Backstory...</Typography>
+            <Typography variant="h4" padding={1} sx={{alignItems: "center"}}>The Backstory...</Typography>
               <Typography variant="body3" paragraph="true">
                 Consider this situation: You are stuck on a long road trip with
                 many people you don't know, and you are all queuing up songs on
@@ -75,7 +76,7 @@ function About() {
                 artist and genre discovery, and even help get you more acquainted
                 with the music tastes of your friends.
               </Typography>
-              <Typography variant="h4">Why "Simmer the Toads"?</Typography>
+              <Typography variant="h4" padding={1}>Why "Simmer the Toads"?</Typography>
               <Typography variant="body3" paragraph="true">
                 When you boil frogs, you don't put them in a hot pot initially -
                 they'll just jump straight out. You slowly but surely turn up
@@ -84,10 +85,12 @@ function About() {
                 transition tools, before you know it, you and your friends (the
                 proverbial frogs) will be “boiled” from Lana Del Rey's dreamy
                 chords to Audioslave's hard-hitting grunge.
-                The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to
+              </Typography>
+              <Typography variant="body3" paragraph="true">
+              The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to
                 the existing Spotify extension named “Boil The Frogs” that
-                inspired this project. We love them lots and are proud to be inspired by them.
-                Check Boil the Frog out <Link href="http://boilthefrog.playlistmachinery.com/">here!</Link>
+                inspired this project. We love them lots and are proud to be inspired by them - 
+                <a href="http://boilthefrog.playlistmachinery.com/">Check Boil the Frog out here!</a>
               </Typography>
             </Box>
           </Paper>
@@ -102,7 +105,7 @@ function About() {
             sx={{ color: "text.primary", bgcolor: "#B38D97" }}
           >
             <Box m={2}>
-              <Typography variant="h4">How To Use Simmer the Toads</Typography>
+              <Typography padding={1} variant="h4">How To Use Simmer the Toads</Typography>
               <Typography variant="body3">
                 Simmer the Toads requires you to login to Spotify first. You'll
                 be able to access your playlists from the main page. Click the
@@ -121,7 +124,7 @@ function About() {
         <Grid item xs={6}>
           <Paper elevation={4} sx={{ color: "#ECBEB4", bgcolor: "#422040" }}>
             <Box m={2}>
-              <Typography variant="h4">How It Works</Typography>
+              <Typography variant="h4" padding={1}>How It Works</Typography>
               <Typography variant="body3" paragraph="true">
                 First, our algorithm analyses metadata scraped from Spotify
                 about each song. We can get simple information such as artist,
@@ -171,6 +174,7 @@ function About() {
           />
         </Grid>
       </Grid>
+      <span>&nbsp;&nbsp;</span>
     </Box>
   );
 }

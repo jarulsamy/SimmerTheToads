@@ -1,6 +1,7 @@
 import "./css/App.css";
 import CreateTabs from "./Tabs";
 import Header from "./Header";
+import Footer from "./Footer";
 import { APIContextProvider } from "./API_service";
 import { AlertPopup } from "./Alert";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -46,6 +47,9 @@ const theme = createTheme({
     h4: {
       fontFamily: ["DynaPuff", "cursive"].join(",")
     },
+    h5: {
+      fontFamily: ["DynaPuff", "cursive"].join(",")
+    },
     body1: {
       fontFamily: ["Alata", "sans-serif"].join(",")
     },
@@ -66,7 +70,7 @@ function App() {
   return (
     <div className="App">
       <div style={
-        { backgroundImage: `url(${froggie_bg})`, backgroundSize:"contain", backgroundAttachment: 'fixed', backgroundPosition: 'center bottom', backgroundColor: '#f3e3db'}
+        {backgroundColor: '#f3e3db'}
         }>
         <ThemeProvider theme={theme}>
           <APIContextProvider>
@@ -77,6 +81,7 @@ function App() {
             <div style={{marginTop: '56px'}}>
               <CreateTabs />
             </div>
+            <Footer />
           </APIContextProvider>
         </ThemeProvider>
       </div>

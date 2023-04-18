@@ -98,9 +98,9 @@ class PlaylistCardsContainer extends React.Component {
           justifyContent="flex-end"
           alignItems="flex-end"
         >
-        <footer style={{position: "fixed", bottom: 0, paddingBottom: 20, backgroundImage: `url(${bubble_stretched})`, backgroundSize:"contain", backgroundRepeat: 'no-repeat'}}>
+        <footer style={{position: "fixed", zIndex: '99', bottom: 450, paddingTop: 20}}>
           <SimmerMenu onChange={this.simmerPlaylist} />
-        </footer>        
+        </footer>       
         </Box>
         {this.state.loading ? <SimpleBackdrop /> : <></>}
         {/* {this.state.loadingcomplete ? 
@@ -156,6 +156,7 @@ function PlaylistCards(props) {
           );
         })}
       </Grid>
+      <span>&nbsp;&nbsp;</span>
     </Box>
   );
 }

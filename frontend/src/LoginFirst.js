@@ -15,7 +15,7 @@ function LoginFirst() {
 
             <Grid container justifyContent="space-evenly">
                 <Grid sx={{width: '25%'}} item justifyContent={'center'}>
-                    <Paper elevation={3} square>
+                    <Paper elevation={3}>
                         <Box padding={3} color="text.secondary" bgcolor='#a3ac88'>
                             <Typography variant="h4">Simmer</Typography>
                             <Typography variant="body2">
