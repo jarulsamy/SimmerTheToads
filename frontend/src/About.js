@@ -21,8 +21,8 @@ function About() {
   analysis on modern implementations of quicksort and exploring new optimization
   techniques to improve performance.`;
 
-  let LonaText = `Lona is a San Diego native with interests in Machine Learning,
-  and a focus in natural language processing.  She currently works as an
+  let LonaText = `Lona is a San Diego native and a Spotify enthusiast with interests in Machine Learning,
+  She currently works as an
   undergraduate research assistant at the UWyo MALLET Lab.  Her current research
   is a comparison of how common ML tasks are done between the MLR3, SKLearn, and
   MLJulia packages.  Outside of her research, she also works as a Teaching
@@ -75,16 +75,19 @@ function About() {
                 artist and genre discovery, and even help get you more acquainted
                 with the music tastes of your friends.
               </Typography>
+              <Typography variant="h4">Why "Simmer the Toads"?</Typography>
               <Typography variant="body3" paragraph="true">
                 When you boil frogs, you don't put them in a hot pot initially -
                 they'll just jump straight out. You slowly but surely turn up
-                the heat. With our Spotify extension's seamless musical genre
+                the heat, so that the frog does not realize it is being boiled.
+                With our Spotify extension's seamless musical genre
                 transition tools, before you know it, you and your friends (the
                 proverbial frogs) will be “boiled” from Lana Del Rey's dreamy
-                chords to Nickelback's 40 year old dad rock. The affectionate
-                nickname “Simmer the Toads”, is our homage to this adage, and to
+                chords to Audioslave's hard-hitting grunge.
+                The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to
                 the existing Spotify extension named “Boil The Frogs” that
-                inspired this project.
+                inspired this project. We love them lots and are proud to be inspired by them.
+                Check Boil the Frog out <Link href="http://boilthefrog.playlistmachinery.com/">here!</Link>
               </Typography>
             </Box>
           </Paper>
