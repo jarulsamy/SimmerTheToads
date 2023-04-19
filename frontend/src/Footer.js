@@ -11,7 +11,7 @@ function Footer() {
         width: "100%",
         position: "fixed",
         bottom: 0,
-        zIndex: "99",
+        zIndex: "50",
         backgroundImage: `url(${footer_water})`,
         backgroundSize: "contain",
         backgroundAttachment: "fixed",

@@ -66,20 +66,10 @@ const theme = createTheme({
 
 function App() {
   return (
-    <div
-      className="App"
-      style={{
-        backgroundColor: "#f3e3db",
-        flex: "display",
-        flexDirection: "column",
-      }}
-    >
+    <div className="App">
       <ThemeProvider theme={theme}>
         <APIContextProvider>
-          <AlertPopup />
-          <Header />
           <CreateTabs />
-          <Footer />
         </APIContextProvider>
       </ThemeProvider>
     </div>

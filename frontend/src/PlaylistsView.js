@@ -1,6 +1,6 @@
 import * as React from "react";
 import Paper from "@mui/material/Paper";
-import { Box, Grid } from "@mui/material";
+import { Box, Fab, Grid } from "@mui/material";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
 import celebratory_froggie from "./images/celebratory_froggie.png";
@@ -122,9 +122,7 @@ class PlaylistCardsContainer extends React.Component {
   render() {
     return (
       <Container>
-        <div style={{ overflowY: "scroll", height: "100%" }}>
-          <PlaylistCards selectedCard={this.selectedCard} />
-        </div>
+        <PlaylistCards selectedCard={this.selectedCard} />
         <Box
           m={1}
           display="flex"
@@ -132,9 +130,16 @@ class PlaylistCardsContainer extends React.Component {
           alignItems="flex-end"
         >
           <header
-            style={{ position: "fixed", zIndex: "99", top: 0, paddingTop: 110 }}
+            style={{
+              position: "fixed",
+              bottom: 0,
+              paddingBottom: 100,
+              paddingLeft: 90,
+            }}
           >
-            <SimmerMenu onChange={this.simmerPlaylist} />
+            <Fab variant="extended" size="large">
+              <SimmerMenu onChange={this.simmerPlaylist} />
+            </Fab>
           </header>
         </Box>
         {this.state.loading ? <SimpleBackdrop /> : <></>}
@@ -155,16 +160,7 @@ function PlaylistCards(props) {
 
   return (
     <Box>
-      <Grid
-        container
-        rowSpacing={4}
-        spacing={4}
-        justifyContent="center"
-        style={{
-          overflow: "auto",
-          maxHeight: "90vh",
-        }}
-      >
+      <Grid container rowSpacing={4} spacing={4} justifyContent="center">
         {playlists.map((p) => {
           return (
             <Grid item key={p.id}>
