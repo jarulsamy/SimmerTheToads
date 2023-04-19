@@ -3,20 +3,22 @@ import React from "react";
 import { Container, Typography } from "@mui/material";
 import { Box, Grid } from "@mui/material";
 import Paper from "@mui/material/Paper";
+import NiceImage from "./NiceImage";
+import boiling_froggie from "./images/loading_simmer.gif";
 
 // sx={{background: 'linear-gradient(to bottom, #F1DAC4, #ECBEB4)', width: '100%', height: '100%'}}
 
 function LoginFirst() {
   return (
-    <Container>
-      <Typography variant="h1">
-        Well-ordered, seamless listening experiences.
+    <Box>
+      <NiceImage image={boiling_froggie} />
+      <Typography padding={4} fontSize="25px" align="center">
+        Oh, hey there :) We're Simmer the Toads: a Spotify extention that
+        utilizes Machine Learning techniques to elegantly organize your
+        playlists, creating seamless transitions between songs of varying
+        genres, artists, and moods.
       </Typography>
-      <Typography padding={4} variant="h3">
-        We are Simmer The Toads: a Spotify extention that utilizes Machine
-        Learning techniques to elegantly organize your playlists.
-      </Typography>
-      <Typography padding={4} variant="h4">
+      <Typography padding={4} variant="h5">
         We developed three algorithms for you to choose from:
       </Typography>
 
@@ -56,10 +58,11 @@ function LoginFirst() {
           </Paper>
         </Grid>
       </Grid>
+
       <Typography padding={4} variant="h4">
         To use these, please login to your Spotify account!
       </Typography>
-    </Container>
+    </Box>
   );
 }
 
