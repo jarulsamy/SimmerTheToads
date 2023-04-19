@@ -87,11 +87,14 @@ function About() {
                 chords to Audioslave's hard-hitting grunge.
               </Typography>
               <Typography variant="body3" paragraph="true">
-              The affectionate nickname “Simmer the Toads”, is our homage to this adage, and to
-                the existing Spotify extension named “Boil The Frogs” that
-                inspired this project. We love them lots and are proud to be inspired by them - 
-                <a href="http://boilthefrog.playlistmachinery.com/">Check Boil the Frog out here!</a>
+                The affectionate nickname “Simmer the Toads”, is our homage to
+                this adage, and to the existing Spotify extension named “Boil
+                The Frogs” that inspired this project. We love them lots and are
+                proud to be inspired by them.
               </Typography>
+              <a href="http://boilthefrog.playlistmachinery.com/">
+                  Check Boil the Frog out here!
+                </a>
             </Box>
           </Paper>
         </Grid>
@@ -174,7 +177,12 @@ function About() {
           />
         </Grid>
       </Grid>
-      <span>&nbsp;&nbsp;</span>
+      <Box
+      sx={{
+        height: 200,
+        backgroundColor: 'transparent',
+      }}
+    />
     </Box>
   );
 }

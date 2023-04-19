@@ -25,10 +25,6 @@ export default class Home extends Component {
       return <LoginFirst />;
     }
 
-    return (
-      <div >
-        <PlaylistCardsContainer />
-      </div>
-    );
+    else return <PlaylistCardsContainer />;
   }
 }
