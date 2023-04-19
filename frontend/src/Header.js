@@ -8,7 +8,7 @@ function Header() {
     return (
         <Box sx={{ width: "100%", bgcolor: "#ECBEB4", zIndex: '99' }}>
             <Box component="img" src={logo} alt="Logo" className="logo"/>
-            <Typography variant="h3">Simmer the Toads</Typography>
+            <Typography variant="h3" color="#422040">Simmer the Toads</Typography>
         </Box>
     )
 }

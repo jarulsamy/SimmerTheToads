@@ -98,9 +98,9 @@ class PlaylistCardsContainer extends React.Component {
           justifyContent="flex-end"
           alignItems="flex-end"
         >
-        <footer style={{position: "fixed", zIndex: '99', bottom: 450, paddingTop: 20}}>
+        <header style={{position: "fixed", zIndex: '99', top: 0, paddingTop: 110}}>
           <SimmerMenu onChange={this.simmerPlaylist} />
-        </footer>       
+        </header>       
         </Box>
         {this.state.loading ? <SimpleBackdrop /> : <></>}
         {/* {this.state.loadingcomplete ? 

@@ -37,11 +37,11 @@ export default function SimmerMenu(props) {
             'aria-labelledby': 'basic-button',
           }}
           anchorOrigin={{
-            vertical: "top",
+            vertical: "bottom",
             horizontal: "right"
           }}
           transformOrigin={{
-            vertical: "bottom",
+            vertical: "top",
             horizontal: "right"
           }}
         >
