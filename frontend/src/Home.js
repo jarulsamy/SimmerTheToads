@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PlaylistCards from "./PlaylistsView";
 import { APIContext } from "./API_service";
 import PlaylistCardsContainer from "./PlaylistsView";
 import LoginFirst from "./LoginFirst";
@@ -8,8 +7,8 @@ export default class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedPlaylist: ''
-    }
+      selectedPlaylist: "",
+    };
 
     this.setSelectedPlaylist = this.setSelectedPlaylist.bind(this);
   }
@@ -17,7 +16,7 @@ export default class Home extends Component {
   static contextType = APIContext;
 
   setSelectedPlaylist(id) {
-    this.setState({selectedPlaylist: id});
+    this.setState({ selectedPlaylist: id });
   }
 
   render() {
@@ -25,6 +24,6 @@ export default class Home extends Component {
       return <LoginFirst />;
     }
 
-    else return <PlaylistCardsContainer />;
+    return <PlaylistCardsContainer />;
   }
 }

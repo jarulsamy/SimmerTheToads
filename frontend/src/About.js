@@ -12,9 +12,13 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 
-
 function About() {
-  let JosephText = `Having grown up in Alaska, Joseph moved to the Continental US to pursue higher education. His inquisitive nature has driven him to explore various subfields within Computer Science. Presently, he is directing his efforts toward gaining expertise in applying Machine Learning and comprehending Ray Tracing. Joseph is an enthusiastic reader and has been Nordic skiing for as long as he can remember.`;
+  let JosephText = `Having grown up in Alaska, Joseph moved to the Continental
+  US to pursue higher education. His inquisitive nature has driven him to
+  explore various subfields within Computer Science. Presently, he is directing
+  his efforts toward gaining expertise in applying Machine Learning and
+  comprehending Ray Tracing. Joseph is an enthusiastic reader and has been
+  Nordic skiing for as long as he can remember.`;
 
   let JoshText = `Josh enjoys contributing to many open source projects and
   tinkering with Linux. He is a WRSP Scholar and works in the UWyo MALLET lab
@@ -42,10 +46,10 @@ function About() {
   UW. You might not be surprised that she spends her free time reading!`;
 
   return (
-    <Box style={{ overflow: "auto"}}>
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+    <Box>
+      <Grid container spacing={2} sx={{ overflow: "auto" }}>
         <Grid item xs={6}>
-          <NiceImage image={hooray_froggie}/>
+          <NiceImage image={hooray_froggie} />
         </Grid>
         <Grid item xs={6}>
           <Paper
@@ -53,7 +57,13 @@ function About() {
             sx={{ color: "text.secondary", bgcolor: "#a3ac88" }}
           >
             <Box m={2}>
-            <Typography variant="h4" padding={1} sx={{alignItems: "center"}}>The Backstory...</Typography>
+              <Typography
+                variant="h4"
+                padding={1}
+                sx={{ alignItems: "center", overflow: "auto" }}
+              >
+                The Backstory...
+              </Typography>
               <Typography variant="body3" paragraph="true">
                 Consider this situation: You are stuck on a long road trip with
                 many people you don't know, and you are all queuing up songs on
@@ -72,19 +82,21 @@ function About() {
                 lives. We listen to and explore new artists all the time. STT
                 aims to be a playlist service where we can come together to
                 listen to the music that we already enjoy, but also gently
-                expand our tastes. We hope to aid in
-                artist and genre discovery, and even help get you more acquainted
-                with the music tastes of your friends.
+                expand our tastes. We hope to aid in artist and genre discovery,
+                and even help get you more acquainted with the music tastes of
+                your friends.
               </Typography>
-              <Typography variant="h4" padding={1}>Why "Simmer the Toads"?</Typography>
+              <Typography variant="h4" padding={1}>
+                Why "Simmer the Toads"?
+              </Typography>
               <Typography variant="body3" paragraph="true">
                 When you boil frogs, you don't put them in a hot pot initially -
                 they'll just jump straight out. You slowly but surely turn up
                 the heat, so that the frog does not realize it is being boiled.
-                With our Spotify extension's seamless musical genre
-                transition tools, before you know it, you and your friends (the
-                proverbial frogs) will be “boiled” from Lana Del Rey's dreamy
-                chords to Audioslave's hard-hitting grunge.
+                With our Spotify extension's seamless musical genre transition
+                tools, before you know it, you and your friends (the proverbial
+                frogs) will be “boiled” from Lana Del Rey's dreamy chords to
+                Audioslave's hard-hitting grunge.
               </Typography>
               <Typography variant="body3" paragraph="true">
                 The affectionate nickname “Simmer the Toads”, is our homage to
@@ -93,14 +105,14 @@ function About() {
                 proud to be inspired by them.
               </Typography>
               <a href="http://boilthefrog.playlistmachinery.com/">
-                  Check Boil the Frog out here!
-                </a>
+                Check Boil the Frog out here!
+              </a>
             </Box>
           </Paper>
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={1} />
         <Grid item xs={6}>
           <Paper
@@ -108,7 +120,9 @@ function About() {
             sx={{ color: "text.primary", bgcolor: "#B38D97" }}
           >
             <Box m={2}>
-              <Typography padding={1} variant="h4">How To Use Simmer the Toads</Typography>
+              <Typography padding={1} variant="h4">
+                How To Use Simmer the Toads
+              </Typography>
               <Typography variant="body3">
                 Simmer the Toads requires you to login to Spotify first. You'll
                 be able to access your playlists from the main page. Click the
@@ -122,12 +136,14 @@ function About() {
         <Grid item xs={5} />
       </Grid>
       {/* How it Works*/}
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={5} />
         <Grid item xs={6}>
           <Paper elevation={4} sx={{ color: "#ECBEB4", bgcolor: "#422040" }}>
             <Box m={2}>
-              <Typography variant="h4" padding={1}>How It Works</Typography>
+              <Typography variant="h4" padding={1}>
+                How It Works
+              </Typography>
               <Typography variant="body3" paragraph="true">
                 First, our algorithm analyses metadata scraped from Spotify
                 about each song. We can get simple information such as artist,
@@ -159,7 +175,7 @@ function About() {
       <Typography variant="h3" color="text.primary" align="center">
         Authors
       </Typography>
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={3}>
           <Person name="Joseph" image={JosephImage} description={JosephText} />
         </Grid>
@@ -178,11 +194,11 @@ function About() {
         </Grid>
       </Grid>
       <Box
-      sx={{
-        height: 200,
-        backgroundColor: 'transparent',
-      }}
-    />
+        sx={{
+          height: 200,
+          backgroundColor: "transparent",
+        }}
+      />
     </Box>
   );
 }
