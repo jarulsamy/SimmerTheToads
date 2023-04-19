@@ -1,37 +1,34 @@
 import React from "react";
-import APIService from './API_service.js';
+import APIService from "./API_service.js";
 import "./css/SongForm.css";
 import SongList from "./SongList.js";
 
-
-
 class SongForm extends React.Component {
-  
   constructor(props) {
     super(props);
     this.state = {
-      song: '',
-      songList: []
+      song: "",
+      songList: [],
     };
     this.handlers = {
       submit1: this.handle_submit_add_song,
       submit2: this.handle_submit_send_playlist,
-    }
-    
-    
+    };
+
     this.submit_handler = this.submit_handler.bind(this);
     this.handle_submit_add_song = this.handle_submit_add_song.bind(this);
-    this.handle_submit_send_playlist = this.handle_submit_send_playlist.bind(this);
+    this.handle_submit_send_playlist =
+      this.handle_submit_send_playlist.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
-  
+
   handle_submit_send_playlist() {
     console.log("playlist to send: " + JSON.stringify(this.state["songList"]));
     APIService.sendPlaylist(this.state.songList);
     // .then((response) => props.insertedArticle(response))
     // .catch(error => console.log('error',error))
   }
-  
+
   handle_submit_add_song(event) {
     try {
       // Song submitted
@@ -40,11 +37,10 @@ class SongForm extends React.Component {
       const songListTmp = this.state.songList;
       // Add new song
       songListTmp.push(aSong);
-      this.setState({song: '', songList: songListTmp});
+      this.setState({ song: "", songList: songListTmp });
       // Don't refresh the page
       event.preventDefault();
-    }
-    catch (err) {
+    } catch (err) {
       alert(err);
     }
   }
@@ -53,38 +49,48 @@ class SongForm extends React.Component {
     try {
       // Don't refresh the page
       e.preventDefault();
-      
+
       if (id === "submit1") {
         this.handle_submit_add_song(e);
       }
       if (id === "submit2") {
         this.handle_submit_send_playlist(e);
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
     }
-
-  };
+  }
 
   handleChange(event) {
-    this.setState({song: event.target.value});
+    this.setState({ song: event.target.value });
   }
 
   render() {
     return (
       <div>
-        <form id="submit1" onSubmit={(e) => this.submit_handler(e, e.target.id)}>
-          Enter a song here: 
-          <input type="text" value={this.state.song} onChange={this.handleChange} />
+        <form
+          id="submit1"
+          onSubmit={(e) => this.submit_handler(e, e.target.id)}
+        >
+          Enter a song here:
+          <input
+            type="text"
+            value={this.state.song}
+            onChange={this.handleChange}
+          />
           <input type="submit" value="Submit" />
           <SongList songList={this.state.songList} />
         </form>
-        <button id="submit2" type="submit" onClick={(e) => this.submit_handler(e, e.target.id)}>Make me a playlist!</button>
+        <button
+          id="submit2"
+          type="submit"
+          onClick={(e) => this.submit_handler(e, e.target.id)}
+        >
+          Make me a playlist!
+        </button>
       </div>
     );
   }
-  
 }
 
 // const domContainer = document.querySelector("#songs");

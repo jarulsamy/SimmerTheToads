@@ -217,16 +217,21 @@ def get_simmered_playlist(spotify, id):
     # TODO: Parallel fetching doesn't currently work, child threads cannot use
     # the request context used by the token session management of Spotipy.
     # As a result, this is kinda slow...
-    eval_key = request.args.get("evaluator", "clustering").lower()
-    e = evaluators[eval_key]
+    # eval_key = request.args.get("evaluator", "clustering").lower()
+    # e = evaluators[eval_key]
 
-    to_spotify = request.args.get("to_spotify", False)
-    p = Playlist(spotify, id, parallel_fetch=False)
+    # to_spotify = request.args.get("to_spotify", False)
+    # p = Playlist(spotify, id, parallel_fetch=False)
 
-    tracks = simmer_playlist(p, evaluator=e, to_spotify=to_spotify)
-    new_track_ids = [i.id for i in tracks]
+    # tracks = simmer_playlist(p, evaluator=e, to_spotify=to_spotify)
+    # new_track_ids = [i.id for i in tracks]
 
-    return jsonify(ids_to_tracks(spotify, new_track_ids))
+    # return jsonify(ids_to_tracks(spotify, new_track_ids))
+    import time
+
+    time.sleep(1)
+
+    return jsonify({})
 
 
 @api_bp.post("/update_playlist/<id>")

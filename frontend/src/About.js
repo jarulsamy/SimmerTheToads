@@ -13,7 +13,12 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 
 function About() {
-  let JosephText = `Having grown up in Alaska, Joseph moved to the Continental US to pursue higher education. His inquisitive nature has driven him to explore various subfields within Computer Science. Presently, he is directing his efforts toward gaining expertise in applying Machine Learning and comprehending Ray Tracing. Joseph is an enthusiastic reader and has been Nordic skiing for as long as he can remember.`;
+  let JosephText = `Having grown up in Alaska, Joseph moved to the Continental
+  US to pursue higher education. His inquisitive nature has driven him to
+  explore various subfields within Computer Science. Presently, he is directing
+  his efforts toward gaining expertise in applying Machine Learning and
+  comprehending Ray Tracing. Joseph is an enthusiastic reader and has been
+  Nordic skiing for as long as he can remember.`;
 
   let JoshText = `Josh enjoys contributing to many open source projects and
   tinkering with Linux. He is a WRSP Scholar and works in the UWyo MALLET lab

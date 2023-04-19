@@ -53,7 +53,11 @@ export default class APIService {
     return this.axiosInstance.get(`playlist/${playlist_id}/tracks`);
   }
 
-  static simmeredPlaylistTracks(playlist_id, to_spotify = false, simmerMethod = "clustering") {
+  static simmeredPlaylistTracks(
+    playlist_id,
+    to_spotify = false,
+    simmerMethod = "clustering"
+  ) {
     return this.axiosInstance.get(`simmered_playlist/${playlist_id}/tracks`, {
       params: {
         to_spotify: to_spotify,
