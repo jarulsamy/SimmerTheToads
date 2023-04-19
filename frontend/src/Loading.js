@@ -2,6 +2,13 @@ import * as React from "react";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import Button from "@mui/material/Button";
+import loading_simmer from "./images/loading_simmer.gif"
+import {
+  Dialog,
+  DialogActions,
+  Typography,
+  DialogTitle,
+} from "@mui/material";
 
 export default function SimpleBackdrop() {
   const [open, setOpen] = React.useState(true);
@@ -20,8 +27,17 @@ export default function SimpleBackdrop() {
         open={open}
         onClick={handleClose}
       >
-        {/* This is where the loading frog should go */}
-        <CircularProgress color="inherit" />
+        <Dialog open={true}>
+        <img
+          src={loading_simmer}
+          style={{ width: "auto", height: "auto" }}
+          alt="frog in pot"
+        ></img>
+          <DialogTitle>
+            {" "}
+            <Typography variant="h4">Simmering...</Typography>
+          </DialogTitle>
+        </Dialog>
       </Backdrop>
     </div>
   );
