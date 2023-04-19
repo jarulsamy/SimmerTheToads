@@ -18,7 +18,11 @@ export default function PlaylistCard({
   const [bgColor, setBgColor] = React.useState("#f8ebdf");
 
   return (
-    <Card sx={{ width: 300, bgcolor: bgColor }} variant="outlined">
+    <Card
+      style={{ height: "100%" }}
+      sx={{ width: 300, bgcolor: bgColor }}
+      variant="outlined"
+    >
       <CardActionArea
         onClick={() => {
           selectedCard(!simmerQueued, id, name);

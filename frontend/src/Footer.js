@@ -9,7 +9,7 @@ function Footer() {
       sx={{
         height: "150px",
         width: "100%",
-        position: "sticky",
+        position: "fixed",
         bottom: 0,
         zIndex: "99",
         backgroundImage: `url(${footer_water})`,

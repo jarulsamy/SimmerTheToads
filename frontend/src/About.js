@@ -46,8 +46,8 @@ function About() {
   UW. You might not be surprised that she spends her free time reading!`;
 
   return (
-    <Box style={{ overflow: "auto" }}>
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+    <Box>
+      <Grid container spacing={2} sx={{ overflow: "auto" }}>
         <Grid item xs={6}>
           <NiceImage image={hooray_froggie} />
         </Grid>
@@ -60,7 +60,7 @@ function About() {
               <Typography
                 variant="h4"
                 padding={1}
-                sx={{ alignItems: "center" }}
+                sx={{ alignItems: "center", overflow: "auto" }}
               >
                 The Backstory...
               </Typography>
@@ -112,7 +112,7 @@ function About() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={1} />
         <Grid item xs={6}>
           <Paper
@@ -136,7 +136,7 @@ function About() {
         <Grid item xs={5} />
       </Grid>
       {/* How it Works*/}
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={5} />
         <Grid item xs={6}>
           <Paper elevation={4} sx={{ color: "#ECBEB4", bgcolor: "#422040" }}>
@@ -175,7 +175,7 @@ function About() {
       <Typography variant="h3" color="text.primary" align="center">
         Authors
       </Typography>
-      <Grid container spacing={2} style={{ overflow: "auto" }}>
+      <Grid container spacing={2}>
         <Grid item xs={3}>
           <Person name="Joseph" image={JosephImage} description={JosephText} />
         </Grid>

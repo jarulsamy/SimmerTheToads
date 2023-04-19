@@ -122,7 +122,7 @@ class PlaylistCardsContainer extends React.Component {
   render() {
     return (
       <Container>
-        <div style={{ overflowY: "scroll" }}>
+        <div style={{ overflowY: "scroll", height: "100%" }}>
           <PlaylistCards selectedCard={this.selectedCard} />
         </div>
         <Box
@@ -160,7 +160,10 @@ function PlaylistCards(props) {
         rowSpacing={4}
         spacing={4}
         justifyContent="center"
-        style={{ overflow: "auto", height: "80vh" }}
+        style={{
+          overflow: "auto",
+          maxHeight: "90vh",
+        }}
       >
         {playlists.map((p) => {
           return (
@@ -178,7 +181,6 @@ function PlaylistCards(props) {
           );
         })}
       </Grid>
-      <span>&nbsp;&nbsp;</span>
     </Box>
   );
 }

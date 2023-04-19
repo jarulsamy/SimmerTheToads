@@ -9,6 +9,7 @@ import About from "./About";
 import LoginButton from "./Login";
 import Home from "./Home";
 import { Stack } from "@mui/system";
+import { Container } from "@mui/material";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -55,7 +56,8 @@ export default function CreateTabs() {
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        maxHeight: "100vh",
+        overflow: "hidden",
       }}
     >
       <Stack>
@@ -71,23 +73,17 @@ export default function CreateTabs() {
             <LoginButton />
           </Tabs>
         </Box>
-        <Box
-          id="2"
-          sx={{
-            overflowY: "auto",
-            zIndex: "1",
-            marginTop: "auto",
-          }}
-        >
+
+        <Box sx={{ zIndex: "1" }}>
           <TabPanel value={value} index={0}>
             <Home />
           </TabPanel>
         </Box>
-        <Box sx={{ overflowY: "auto", zIndex: "1" }}>
+        <Container sx={{ zIndex: "1", height: "90vh", overflowY: "scroll" }}>
           <TabPanel value={value} index={1}>
             <About />
           </TabPanel>
-        </Box>
+        </Container>
       </Stack>
     </Box>
   );
