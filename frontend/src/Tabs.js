@@ -70,7 +70,7 @@ export default function CreateTabs() {
           </Tabs>
         </Box>
 
-        <Box sx={{ zIndex: "1" }}>
+        <Box>
           <TabPanel value={value} index={0}>
             <Home />
           </TabPanel>
@@ -80,10 +80,9 @@ export default function CreateTabs() {
             <About />
           </TabPanel>
         </Container>
-
-        {/* <Box sx={{ pb: 2, position: "sticky", bottom: 0, zIndex: "99" }}>
+        <Box sx={{ pb: 2, position: "sticky", bottom: 0, zIndex: 99 }}>
           <Footer />
-        </Box> */}
+        </Box>
       </Stack>
     </Box>
   );

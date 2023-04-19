@@ -2,7 +2,6 @@ import * as React from "react";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import SimpleBackdrop from "./Loading";
 import { Box } from "@mui/material";
 
 export default function SimmerMenu(props) {
@@ -17,7 +16,7 @@ export default function SimmerMenu(props) {
   };
 
   return (
-    <Box>
+    <Box sx={{ zIndex: 100 }}>
       <Button
         id="basic-button"
         aria-controls={open ? "basic-menu" : undefined}
@@ -25,7 +24,7 @@ export default function SimmerMenu(props) {
         aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
       >
-        Simmering Options
+        Simmer
       </Button>
       <Menu
         id="basic-menu"
@@ -36,11 +35,11 @@ export default function SimmerMenu(props) {
           "aria-labelledby": "basic-button",
         }}
         anchorOrigin={{
-          vertical: "bottom",
+          vertical: "top",
           horizontal: "right",
         }}
         transformOrigin={{
-          vertical: "top",
+          vertical: "bottom",
           horizontal: "right",
         }}
       >

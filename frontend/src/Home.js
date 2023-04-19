@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PlaylistCards from "./PlaylistsView";
 import { APIContext } from "./API_service";
 import PlaylistCardsContainer from "./PlaylistsView";
 import LoginFirst from "./LoginFirst";

@@ -1,12 +1,7 @@
 import "./css/App.css";
 import CreateTabs from "./Tabs";
-import Header from "./Header";
-import Footer from "./Footer";
 import { APIContextProvider } from "./API_service";
-import { AlertPopup } from "./Alert";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Box } from "@mui/material";
-import froggie_bg from "./images/long_bg.png";
 
 const theme = createTheme({
   palette: {

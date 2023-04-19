@@ -52,6 +52,7 @@ class PlaylistCardsContainer extends React.Component {
         <img
           src={celebratory_froggie}
           style={{ width: "auto", height: "auto" }}
+          alt="Celebratory Frog"
         ></img>
         <DialogTitle>
           {" "}
@@ -70,6 +71,7 @@ class PlaylistCardsContainer extends React.Component {
         <img
           src={headphone_froggie}
           style={{ width: "auto", height: "auto" }}
+          alt="Headphone Frog"
         ></img>
         <DialogTitle>
           <Typography variant="h4">
@@ -124,20 +126,24 @@ class PlaylistCardsContainer extends React.Component {
       <Container>
         <PlaylistCards selectedCard={this.selectedCard} />
         <Box
-          m={1}
           display="flex"
           justifyContent="flex-end"
           alignItems="flex-end"
+          sx={{ zIndex: 100 }}
         >
           <header
             style={{
               position: "fixed",
               bottom: 0,
               paddingBottom: 100,
-              paddingLeft: 90,
+              zIndex: 100,
             }}
           >
-            <Fab variant="extended" size="large">
+            <Fab
+              variant="extended"
+              size="large"
+              sx={{ position: "sticky", zIndex: 101 }}
+            >
               <SimmerMenu onChange={this.simmerPlaylist} />
             </Fab>
           </header>
