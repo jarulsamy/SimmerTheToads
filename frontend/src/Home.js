@@ -8,8 +8,8 @@ export default class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedPlaylist: ''
-    }
+      selectedPlaylist: "",
+    };
 
     this.setSelectedPlaylist = this.setSelectedPlaylist.bind(this);
   }
@@ -17,7 +17,7 @@ export default class Home extends Component {
   static contextType = APIContext;
 
   setSelectedPlaylist(id) {
-    this.setState({selectedPlaylist: id});
+    this.setState({ selectedPlaylist: id });
   }
 
   render() {
@@ -25,10 +25,6 @@ export default class Home extends Component {
       return <LoginFirst />;
     }
 
-    return (
-      <div >
-        <PlaylistCardsContainer />
-      </div>
-    );
+    return <PlaylistCardsContainer />;
   }
 }

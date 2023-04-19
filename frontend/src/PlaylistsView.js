@@ -3,9 +3,8 @@ import Paper from "@mui/material/Paper";
 import { Box, Grid } from "@mui/material";
 import APIService from "./API_service";
 import { Container } from "@mui/system";
-import { useAlert } from "./Alert";
-import bubble_stretched from "./images/long_lotus.png"
-import celebratory_froggie from "./images/celebratory_froggie.png"
+import celebratory_froggie from "./images/celebratory_froggie.png";
+import headphone_froggie from "./images/headphone_froggie.png";
 import PlaylistCard from "./PlaylistCard";
 import SimmerMenu from "./Menu";
 import SimpleBackdrop from "./Loading";
@@ -22,9 +21,8 @@ class PlaylistCardsContainer extends React.Component {
     super(props);
     this.state = {
       toBeSimmered: [],
-      simmerQueued: false,
       loading: false,
-      loadingcomplete: false,
+      dialog: <></>,
     };
 
     this.simmerPlaylist = this.simmerPlaylist.bind(this);
@@ -33,12 +31,10 @@ class PlaylistCardsContainer extends React.Component {
 
   selectedCard(isNew, newID, newName) {
     if (isNew) {
-      console.log("adding to the list: " + newName);
       this.setState((prevState) => ({
         toBeSimmered: [...prevState.toBeSimmered, { id: newID, name: newName }],
       }));
     } else {
-      console.log("removing from the list: " + newName);
       var temp = this.state.toBeSimmered;
       var index = temp.indexOf({ id: newID, name: newName });
       temp.splice(index, 1);
@@ -47,76 +43,102 @@ class PlaylistCardsContainer extends React.Component {
   }
 
   simmerPlaylist(simmerMethod) {
-    // this function is called when the user clicked one of the options in the dropdown menu
-    if (this.state.toBeSimmered.length > 0) {
-      // which simmering method
-      var evaluator =
-        simmerMethod === "Simmer"
-          ? "clustering"
-          : simmerMethod === "Bake"
-          ? "tsp"
-          : "chaos";
-      console.log("Simmering with method: " + evaluator);
-      this.setState({ loading: true });
-      this.state.toBeSimmered.forEach((playlist) => {
-        console.log(
-          "playlsit id: " + playlist.id + ", playlist name: " + playlist.name
-        );
-        this.setState({ setSimmerQueued: true });
-        // setAlert("info", `Started simmering ${playlist.name}. Please wait...`);
-        APIService.simmeredPlaylistTracks(playlist.id, true, evaluator).then(
-          (resp) => {
-            console.log(`Simmered: ${playlist.id}`);
-            // setAlert("success", `Successfully simmered: ${playlist.name}`);
-            this.setState({ setSimmerQueued: false });
-            this.setState({ loading: false });
-            this.setState({loadingcomplete: true});
-          },
-          (error) => {
-            console.error(error);
-            // setAlert("error", "Something went wrong. Please try again.");
-            this.setState({ setSimmerQueued: false });
-            this.setState({ loading: false });
-          }
-        );
-      });
-    } else {
-      console.log("no playlists to simmer");
+    const handleDialogClose = () => {
+      this.setState({ ...this.state, dialog: <></> });
+    };
+
+    const successDialog = (
+      <Dialog open={true}>
+        <img
+          src={celebratory_froggie}
+          style={{ width: "auto", height: "auto" }}
+        ></img>
+        <DialogTitle>
+          {" "}
+          <Typography variant="h4">Playlist simmered!</Typography>
+        </DialogTitle>
+        <DialogActions>
+          <Button variant="contained" onClick={handleDialogClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
+    const noPlaylistsDialog = (
+      <Dialog open={true}>
+        <img
+          src={headphone_froggie}
+          style={{ width: "auto", height: "auto" }}
+        ></img>
+        <DialogTitle>
+          <Typography variant="h4">
+            Please select at least one playlist to simmer.
+          </Typography>
+        </DialogTitle>
+        <DialogActions>
+          <Button variant="contained" onClick={handleDialogClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
+    if (this.state.toBeSimmered.length <= 0) {
+      this.setState({ ...this.state, dialog: noPlaylistsDialog });
+      return;
     }
+
+    let evaluator;
+    switch (simmerMethod) {
+      case "Simmer":
+        evaluator = "clustering";
+        break;
+      case "Bake":
+        evaluator = "tsp";
+        break;
+      default:
+        evaluator = "chaos";
+        break;
+    }
+    this.setState({ ...this.state, loading: true });
+    this.state.toBeSimmered.forEach((playlist) => {
+      APIService.simmeredPlaylistTracks(playlist.id, true, evaluator).then(
+        (resp) => {
+          this.setState({
+            ...this.state,
+            loading: false,
+            dialog: successDialog,
+          });
+        },
+        (error) => {
+          console.error(error);
+          this.setState({ loading: false });
+        }
+      );
+    });
   }
 
   render() {
     return (
       <Container>
-        <div style={{ overflowY: "scroll", height: "80vh" }}>
+        <div style={{ overflowY: "scroll" }}>
           <PlaylistCards selectedCard={this.selectedCard} />
         </div>
         <Box
           m={1}
-          //margin
           display="flex"
           justifyContent="flex-end"
           alignItems="flex-end"
         >
-        <header style={{position: "fixed", zIndex: '99', top: 0, paddingTop: 110}}>
-          <SimmerMenu onChange={this.simmerPlaylist} />
-        </header>       
+          <header
+            style={{ position: "fixed", zIndex: "99", top: 0, paddingTop: 110 }}
+          >
+            <SimmerMenu onChange={this.simmerPlaylist} />
+          </header>
         </Box>
         {this.state.loading ? <SimpleBackdrop /> : <></>}
-        {/* {this.state.loadingcomplete ? 
-          <Dialog
-            open={true}
-            // onClose={} should trigger dialogue to close?
-            style={{width: '200px', marginLeft: '40%', marginTop: '40%', backgroundImage: `url(${celebratory_froggie})`, backgroundSize:"contain", backgroundRepeat: 'no-repeat'}}
-          >
-          <DialogTitle>
-            {" "}
-            <Typography variant="h4">Playlist simmered!</Typography>
-          </DialogTitle>
-          <DialogActions>
-            <Button variant="contained" color= "#f8ebdf">Close</Button>
-          </DialogActions>
-        </Dialog> : <></>}  */}
+        {this.state.dialog}
       </Container>
     );
   }
@@ -138,7 +160,7 @@ function PlaylistCards(props) {
         rowSpacing={4}
         spacing={4}
         justifyContent="center"
-        style={{ overflow: "auto" }}
+        style={{ overflow: "auto", height: "80vh" }}
       >
         {playlists.map((p) => {
           return (
