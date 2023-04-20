@@ -12,39 +12,36 @@ import Paper from "@mui/material/Paper";
 export default function Person({
   name = "Froggie",
   image = logo,
-  description = "Froggie has been invaluable in motivating us. Without him we do not know how we would have finished.",
+  description = `Froggie has been invaluable in motivating us. Without him we do
+  not know how we would have finished.`,
 }) {
-  console.log(name);
   return (
-    // sx = {{ maxWidth:  350}}
-    <Card variant="outlined">
-      <Grid container spacing={0}>
-        <Grid item xs={0} />
-        <Grid item xs={6}>
-          <Paper elevation={0}>
+    <Paper elevation={4}>
+      <Card variant="outlined">
+        <Grid container spacing={0}>
+          <Grid item xs={6}>
             <Box t={2}>
               <CardMedia
                 component="img"
                 height="150"
                 width="150"
                 image={image}
-                // frontend/src/images/froggie.png
-                alt="image of the person"
+                alt="Image of Person"
                 sx={{ borderRadius: "10%" }}
               />
             </Box>
-          </Paper>
+          </Grid>
+          <Grid item xs={3}>
+            <CardHeader title={name} />
+          </Grid>
         </Grid>
-        <Grid item xs={3}>
-          <CardHeader title={name} />
-        </Grid>
-      </Grid>
 
-      <CardContent>
-        <Typography variant="body3" color="text.secondary">
-          {description}
-        </Typography>
-      </CardContent>
-    </Card>
+        <CardContent>
+          <Typography variant="body3" color="text.secondary">
+            {description}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Paper>
   );
 }

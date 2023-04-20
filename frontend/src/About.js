@@ -1,6 +1,5 @@
 import React from "react";
 import Person from "./Person";
-import NiceImage from "./NiceImage";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import JosephImage from "./images/Joseph.png";
@@ -21,15 +20,15 @@ function About() {
   Nordic skiing for as long as he can remember.`;
 
   let JoshText = `Josh enjoys contributing to many open source projects and
-  tinkering with Linux. He is a WRSP Scholar and works in the UWyo MALLET lab
-  as an undergraduate research assistant. Currently, he is conducting empircal
+  tinkering with Linux. He is a WRSP Scholar and works in the UWyo MALLET lab as
+  an undergraduate research assistant. Currently, he is conducting empircal
   analysis on modern implementations of quicksort and exploring new optimization
   techniques to improve performance.`;
 
-  let LonaText = `Lona is a San Diego native and a Spotify enthusiast with interests in Machine Learning,
-  She currently works as an
-  undergraduate research assistant at the UWyo MALLET Lab.  Her current research
-  is a comparison of how common ML tasks are done between the MLR3, SKLearn, and
+  let LonaText = `Lona is a San Diego native and a Spotify enthusiast with
+  interests in Machine Learning, She currently works as an undergraduate
+  research assistant at the UWyo MALLET Lab.  Her current research is a
+  comparison of how common ML tasks are done between the MLR3, SKLearn, and
   MLJulia packages.  Outside of her research, she also works as a Teaching
   Assistant for the Intro to Computer Science course at UWyo, and as a student
   mentor for the Office of Student Success & Graduation.  Her hobbies include
@@ -47,16 +46,25 @@ function About() {
 
   return (
     <Box>
-      <Grid container spacing={2} sx={{ overflow: "auto" }}>
-        <Grid item xs={6}>
-          <NiceImage image={hooray_froggie} />
+      <Grid container spacing={3} sx={{ overflow: "auto" }}>
+        <Grid item>
+          <Paper elevation={4}>
+            <Box justifyContent="center">
+              <img
+                src={hooray_froggie}
+                height={400}
+                width={400}
+                alt="Hooray Froggie"
+              ></img>
+            </Box>
+          </Paper>
         </Grid>
         <Grid item xs={6}>
           <Paper
             elevation={4}
             sx={{ color: "text.secondary", bgcolor: "#a3ac88" }}
           >
-            <Box m={2}>
+            <Box m={2} p={1}>
               <Typography
                 variant="h4"
                 padding={1}
@@ -114,14 +122,14 @@ function About() {
 
       <Grid container spacing={2}>
         <Grid item xs={1} />
-        <Grid item xs={6}>
+        <Grid item xs={7}>
           <Paper
             elevation={4}
             sx={{ color: "text.primary", bgcolor: "#B38D97" }}
           >
-            <Box m={2}>
+            <Box m={2} p={2}>
               <Typography padding={1} variant="h4">
-                How To Use Simmer the Toads
+                How to Use Simmer the Toads
               </Typography>
               <Typography variant="body3">
                 Simmer the Toads requires you to login to Spotify first. You'll
@@ -140,7 +148,7 @@ function About() {
         <Grid item xs={5} />
         <Grid item xs={6}>
           <Paper elevation={4} sx={{ color: "#ECBEB4", bgcolor: "#422040" }}>
-            <Box m={2}>
+            <Box m={2} p={1}>
               <Typography variant="h4" padding={1}>
                 How It Works
               </Typography>
@@ -161,7 +169,10 @@ function About() {
               <Typography variant="body3" paragraph="true">
                 Lastly, we curate additional transition songs using Spotify’s
                 recommendation API. These songs are added between clusters to
-                make seamless listening transitions.
+                make seamless listening transitions. More information and source
+                code are available at our{" "}
+                <a href="https://github.com/jarulsamy/SimmerTheToads">GitHub</a>
+                .
               </Typography>
             </Box>
           </Paper>
@@ -175,7 +186,7 @@ function About() {
       <Typography variant="h3" color="text.primary" align="center">
         Authors
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} p={2}>
         <Grid item xs={3}>
           <Person name="Joseph" image={JosephImage} description={JosephText} />
         </Grid>
@@ -193,12 +204,6 @@ function About() {
           />
         </Grid>
       </Grid>
-      <Box
-        sx={{
-          height: 200,
-          backgroundColor: "transparent",
-        }}
-      />
     </Box>
   );
 }

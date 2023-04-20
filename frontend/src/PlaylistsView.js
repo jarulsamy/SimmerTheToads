@@ -207,7 +207,7 @@ function PlaylistCards(props) {
         {playlists.map((p) => {
           return (
             <Grid item key={p.id}>
-              <Paper elevation={3}>
+              <Paper elevation={4}>
                 <PlaylistCard
                   id={p.id}
                   name={p.name}

@@ -10,7 +10,6 @@ export default function PlaylistCard({
   name,
   description,
   images,
-  songs = [],
   selectedCard,
 }) {
   const image = images[0] || { url: "", height: 300, width: 300 };
