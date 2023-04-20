@@ -1,38 +1,22 @@
 import * as React from "react";
 import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
-import Button from "@mui/material/Button";
-import loading_simmer from "./images/loading_simmer.gif"
-import {
-  Dialog,
-  DialogActions,
-  Typography,
-  DialogTitle,
-} from "@mui/material";
+import { Dialog, Typography, DialogTitle } from "@mui/material";
 
-export default function SimpleBackdrop() {
-  const [open, setOpen] = React.useState(true);
-  const handleClose = () => {
-    setOpen(false);
-  };
-  const handleToggle = () => {
-    setOpen(!open);
-  };
-
+export default function SimpleBackdrop(props) {
+  const { animation } = props;
+  const [open] = React.useState(true);
   return (
     <div>
-      {/* <Button onClick={handleToggle}>Show backdrop</Button> */}
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={open}
-        onClick={handleClose}
       >
         <Dialog open={true}>
-        <img
-          src={loading_simmer}
-          style={{ width: "auto", height: "auto" }}
-          alt="frog in pot"
-        ></img>
+          <img
+            src={animation}
+            style={{ width: "auto", height: "auto" }}
+            alt="frog in pot"
+          ></img>
           <DialogTitle>
             {" "}
             <Typography variant="h4">Simmering...</Typography>

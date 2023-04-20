@@ -6,6 +6,9 @@ import { Container } from "@mui/system";
 import celebratory_froggie from "./images/celebratory_froggie.png";
 import headphone_froggie from "./images/headphone_froggie.png";
 import sad_froggie from "./images/sad_froggie.png";
+import loadingBake from "./images/loading_baking.gif";
+import loadingSimmer from "./images/loading_simmer.gif";
+import loadingMicrowave from "./images/loading_microwaving.gif";
 import PlaylistCard from "./PlaylistCard";
 import SimmerMenu from "./Menu";
 import SimpleBackdrop from "./Loading";
@@ -23,6 +26,7 @@ class PlaylistCardsContainer extends React.Component {
     this.state = {
       toBeSimmered: [],
       loading: false,
+      animationSrc: null,
       dialog: <></>,
     };
 
@@ -33,13 +37,14 @@ class PlaylistCardsContainer extends React.Component {
   selectedCard(isNew, newID, newName) {
     if (isNew) {
       this.setState((prevState) => ({
+        ...prevState,
         toBeSimmered: [...prevState.toBeSimmered, { id: newID, name: newName }],
       }));
     } else {
       var temp = this.state.toBeSimmered;
       var index = temp.indexOf({ id: newID, name: newName });
       temp.splice(index, 1);
-      this.setState({ toBeSimmered: temp });
+      this.setState({ ...this.state, toBeSimmered: temp });
     }
   }
 
@@ -76,7 +81,9 @@ class PlaylistCardsContainer extends React.Component {
         ></img>
         <DialogTitle>
           {" "}
-          <Typography variant="h4">Oops, something went wrong. Playlist wasn't simmered...</Typography>
+          <Typography variant="h4">
+            Oops, something went wrong. Playlist wasn't simmered...
+          </Typography>
         </DialogTitle>
         <DialogActions>
           <Button variant="contained" onClick={handleDialogClose}>
@@ -112,18 +119,23 @@ class PlaylistCardsContainer extends React.Component {
     }
 
     let evaluator;
+    let animationSrc;
     switch (simmerMethod) {
-      case "Simmer":  
+      case "Simmer":
         evaluator = "clustering";
+        animationSrc = loadingSimmer;
         break;
       case "Bake":
         evaluator = "tsp";
+        animationSrc = loadingBake;
         break;
       default:
         evaluator = "chaos";
+        animationSrc = loadingMicrowave;
         break;
     }
-    this.setState({ ...this.state, loading: true });
+    this.setState({ ...this.state, loading: true, animationSrc: animationSrc });
+
     this.state.toBeSimmered.forEach((playlist) => {
       APIService.simmeredPlaylistTracks(playlist.id, true, evaluator).then(
         (resp) => {
@@ -135,7 +147,7 @@ class PlaylistCardsContainer extends React.Component {
         },
         (error) => {
           console.error(error);
-          this.setState({ 
+          this.setState({
             loading: false,
             dialog: failureDialog,
           });
@@ -145,6 +157,8 @@ class PlaylistCardsContainer extends React.Component {
   }
 
   render() {
+    let animation = this.state.animationSrc || loadingSimmer;
+
     return (
       <Container>
         <PlaylistCards selectedCard={this.selectedCard} />
@@ -171,7 +185,7 @@ class PlaylistCardsContainer extends React.Component {
             </Fab>
           </header>
         </Box>
-        {this.state.loading ? <SimpleBackdrop /> : <></>}
+        {this.state.loading ? <SimpleBackdrop animation={animation} /> : <></>}
         {this.state.dialog}
       </Container>
     );
