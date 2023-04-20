@@ -4,9 +4,10 @@ import os
 
 import spotipy
 from flask import (Blueprint, jsonify, redirect, render_template, request,
-                   session)
+                   send_from_directory, session)
 from spotipy.oauth2 import SpotifyOAuth
 
+from . import static_dir, template_dir
 from .engine import (ChaosEvaluator, ClusteringEvaluator, Playlist,
                      TSPEvaluator, batched, simmer_playlist)
 from .version import __version__
@@ -28,8 +29,18 @@ OAUTH_SCOPES = [
 ]
 
 # Setup the blueprints
-frontend_bp = Blueprint("frontend_bp", __name__)
-api_bp = Blueprint("api_bp", __name__)
+frontend_bp = Blueprint(
+    "frontend_bp",
+    __name__,
+    template_folder=str(template_dir.absolute()),
+    static_folder=str(static_dir.absolute()),
+)
+api_bp = Blueprint(
+    "api_bp",
+    __name__,
+    template_folder=str(template_dir.absolute()),
+    static_folder=str(static_dir.absolute()),
+)
 CLOSE_IF_CHILD_JS = r"""<script>
     if (window.opener !== null) window.close();
 </script>"""
@@ -39,6 +50,13 @@ CLOSE_IF_CHILD_JS = r"""<script>
 def frontend_index():
     """Return anything the frontend needs."""
     return render_template("index.html")
+
+
+@frontend_bp.route("/robots.txt")
+def robots():
+    """Return robots.txt."""
+    print(frontend_bp.static_folder)
+    return send_from_directory(frontend_bp.template_folder, "robots.txt")
 
 
 def logged_in(func):
