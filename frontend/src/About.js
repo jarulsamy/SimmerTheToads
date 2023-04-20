@@ -45,7 +45,7 @@ function About() {
   UW. You might not be surprised that she spends her free time reading!`;
 
   return (
-    <Box>
+    <Box paddingBottom={7}>
       <Grid container spacing={3} sx={{ overflow: "auto" }}>
         <Grid item>
           <Paper elevation={4}>

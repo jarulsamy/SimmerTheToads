@@ -202,7 +202,7 @@ function PlaylistCards(props) {
   }, []);
 
   return (
-    <Box>
+    <Box paddingBottom={7}>
       <Grid container rowSpacing={4} spacing={4} justifyContent="center">
         {playlists.map((p) => {
           return (

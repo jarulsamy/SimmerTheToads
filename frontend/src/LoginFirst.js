@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { Box, Grid } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import boiling_froggie from "./images/loading_simmer.gif";
@@ -11,10 +11,12 @@ function LoginFirst() {
   return (
     <Box>
       <Typography padding={4} fontSize="25px" align="center">
-        Oh, hey there :) We're Simmer the Toads: a Spotify extention that
-        utilizes Machine Learning techniques to elegantly organize your
-        playlists, creating seamless transitions between songs of varying
-        genres, artists, and moods.
+        <Container>
+          Oh, hey there :) We're Simmer the Toads: a Spotify extention that
+          utilizes Machine Learning techniques to elegantly organize your
+          playlists, creating seamless transitions between songs of varying
+          genres, artists, and moods.
+        </Container>
       </Typography>
       <Typography padding={4} fontSize="25px" align="center">
         We developed three algorithms for you to choose from:
