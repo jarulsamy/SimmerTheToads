@@ -5,6 +5,7 @@ import APIService from "./API_service";
 import { Container } from "@mui/system";
 import celebratory_froggie from "./images/celebratory_froggie.png";
 import headphone_froggie from "./images/headphone_froggie.png";
+import sad_froggie from "./images/sad_froggie.png";
 import PlaylistCard from "./PlaylistCard";
 import SimmerMenu from "./Menu";
 import SimpleBackdrop from "./Loading";
@@ -66,6 +67,25 @@ class PlaylistCardsContainer extends React.Component {
       </Dialog>
     );
 
+    const failureDialog = (
+      <Dialog open={true}>
+        <img
+          src={sad_froggie}
+          style={{ width: "auto", height: "auto" }}
+          alt="sad frog"
+        ></img>
+        <DialogTitle>
+          {" "}
+          <Typography variant="h4">Oops, something went wrong. Playlist wasn't simmered...</Typography>
+        </DialogTitle>
+        <DialogActions>
+          <Button variant="contained" onClick={handleDialogClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
     const noPlaylistsDialog = (
       <Dialog open={true}>
         <img
@@ -93,7 +113,7 @@ class PlaylistCardsContainer extends React.Component {
 
     let evaluator;
     switch (simmerMethod) {
-      case "Simmer":
+      case "Simmer":  
         evaluator = "clustering";
         break;
       case "Bake":
@@ -115,7 +135,10 @@ class PlaylistCardsContainer extends React.Component {
         },
         (error) => {
           console.error(error);
-          this.setState({ loading: false });
+          this.setState({ 
+            loading: false,
+            dialog: failureDialog,
+          });
         }
       );
     });
