@@ -11,10 +11,10 @@
 
 ## Links to Written Status Updates
 
-- [Status #1](Status/status1.md)
-- [Status #2](Status/status2.md)
-- [Status #3](Status/status3.md)
-- [Status #4](Status/status4.md)
+- [Status #1](/Status/status1.md)
+- [Status #2](/Status/status2.md)
+- [Status #3](/Status/status3.md)
+- [Status #4](/Status/status4.md)
 
 ## Links to Videos
 
@@ -23,7 +23,7 @@
 ## Project Planning And Execution
 
 - [Design Requirements and Specification](https://docs.google.com/document/d/1mxL4wcjIboUZs82ka1uiGlvUL_izlJdRB-PtG3yicJk/edit?usp=sharing)
-- [System Concept Diagram](ElevatorPitch/systemconceptdiagram.pdf)
+- [System Concept Diagram](/ElevatorPitch/systemconceptdiagram.pdf)
 - [Asana Plan](https://app.asana.com/0/1203117920538793/1203117920538793)
 - Original MVP Plan
 
