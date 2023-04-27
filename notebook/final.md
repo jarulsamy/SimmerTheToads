@@ -84,9 +84,13 @@ We wanted our website to allow for these features:
 
 - Users can login to their Spotify account through our website
 - Users can select one or more playlists at a time
-- Playlists can be Simmered, Baked, or Microwaved (names for our playlist optimiziation algorithms)
+- Playlists can be Simmered, Baked, or Microwaved (names for our playlist
+  optimization algorithms)
 
-Other than these features, we wanted our website to be cohesive, aesthetic, and cute. We wanted our project to have an abundance of personality so that we could have fun with it. This meant that we wanted the design to include artistic assets, colors and cute fonts.
+Other than these features, we wanted our website to be cohesive, aesthetic, and
+cute. We wanted our project to have an abundance of personality so that we could
+have fun with it. This meant that we wanted the design to include artistic
+assets, colors and cute fonts.
 
 ### Limitations
 
@@ -112,23 +116,41 @@ Other than these features, we wanted our website to be cohesive, aesthetic, and 
 
 #### Team
 
-We were able to create three hand designed algorithms (Simmer, Bake, Microwave) that we wrapped into a Spotify Extention. We also created a website so that users can utilize this Spotify Extention. This website has character and is fun and easy to use. The backend is well designed and efficient. 
+We were able to create three hand designed algorithms (Simmer, Bake, Microwave)
+that we wrapped into a Spotify Extension. We also created a website so that
+users can utilize this Spotify Extension. This website has character and is fun
+and easy to use. The backend is well designed and efficient.
 
 #### Josh
 
-(TODO)
+I primarily worked on the backend. I implemented our Spotify API integration,
+allowing users to login with their existing Spotify credentials, view and select
+their playlists, and also researched and developed our three primary playlist
+evaluation and optimization algorithms. I also developed integration strategies
+for the frontend and handled deployment.
 
 #### Natalie
 
-I worked on creating the frontend. I combined and tailored MUI components to create the features of our website (minus the Spotify login feature). I implemented the ability to select one or more playlists to optimize. I also implemented the state passing between the playlist cards and simmering buttons, as well as the API calls to the backend. I helped Lona with some aesthetic decisions.
+I worked on creating the frontend. I combined and tailored MUI components to
+create the features of our website (minus the Spotify login feature). I
+implemented the ability to select one or more playlists to optimize. I also
+implemented the state passing between the playlist cards and simmering buttons,
+as well as the API calls to the backend. I helped Lona with some aesthetic
+decisions.
 
 #### Lona
 
-I helped support Josh in developing the Machine Learning algorithms. I also created art mock-ups for the site, and assisted Natalie in prettifying the frontend! I also wrote status updates and supplemental materials for our documentation.
+I helped support Josh in developing the Machine Learning algorithms. I also
+created art mock-ups for the site, and assisted Natalie in prettifying the
+frontend! I also wrote status updates and supplemental materials for our
+documentation.
 
 #### Joseph
 
-Joseph worked on the frontend collaborating with Natalie. I designed and implemented the About page on the website using React at first and then again with Material UI after we switched to using that library. I also created some of the graphics for the presentation.
+Joseph worked on the frontend collaborating with Natalie. I designed and
+implemented the About page on the website using React at first and then again
+with Material UI after we switched to using that library. I also created some of
+the graphics for the presentation.
 
 ## Reflection
 
@@ -137,7 +159,8 @@ Joseph worked on the frontend collaborating with Natalie. I designed and impleme
 - Have someone to manage github well
 - Delegate tasks and separate out components for an easier workflow
 - Use libraries - try to build out nothing from scratch!
-- Don't be afraid to pivot from your vision - be flexible and adapt to difficulties
+- Don't be afraid to pivot from your vision - be flexible and adapt to
+  difficulties
 
 ### "If we had to do it all over again"
 
@@ -147,8 +170,12 @@ Joseph worked on the frontend collaborating with Natalie. I designed and impleme
 
 ### Advice for Future Groups
 
-- Plan ahead, and plan thoroughly. One thing that really helped us was having thorough plans for frontend, backend, and ML
-- Ask for help from fellow students and faculty - perspective was really important for us
-- Plan to be done a month early - you will need the extra time and wiggle room with scheduling
+- Plan ahead, and plan thoroughly. One thing that really helped us was having
+  thorough plans for frontend, backend, and ML
+- Ask for help from fellow students and faculty - perspective was really
+  important for us
+- Plan to be done a month early - you will need the extra time and wiggle room
+  with scheduling
 - Meet frequently - once a week ideally, and in person if you can
-- Make it fun and something you're proud of - it's better to have your project be a little weird than boring
+- Make it fun and something you're proud of - it's better to have your project
+  be a little weird than boring
